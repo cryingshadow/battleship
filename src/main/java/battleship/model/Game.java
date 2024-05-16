@@ -29,18 +29,16 @@ public class Game {
         return result.stream();
     }
 
-    private static boolean validCoordinate(final Coordinate coordinate) {
-        return Game.isBetween(coordinate.x(), 0, 10) && Game.isBetween(coordinate.y(), 0, 10);
-    }
-
-    private static boolean validCoordinates(final ShipPlacement placement) {
-        return Game.toCoordinates(placement).allMatch(Game::validCoordinate);
-    }
-
     private final List<Event> events;
 
-    public Game() {
+    private final int maxX;
+
+    private final int maxY;
+
+    public Game(final int maxX, final int maxY) {
         this.events = new LinkedList<Event>();
+        this.maxX = maxX;
+        this.maxY = maxY;
     }
 
     public Player getWinner() {
@@ -60,7 +58,7 @@ public class Game {
         final Player player
     ) {
         final ShipPlacement placement = new ShipPlacement(type, start, direction, player);
-        if (Game.validCoordinates(placement) && this.noConflict(placement)) {
+        if (this.validCoordinates(placement) && this.noConflict(placement)) {
             this.events.add(placement);
             return true;
         }
@@ -68,7 +66,7 @@ public class Game {
     }
 
     public boolean shot(final Coordinate coordinate, final Player player) {
-        if (Game.validCoordinate(coordinate)) {
+        if (this.validCoordinate(coordinate)) {
             this.events.add(new Shot(coordinate, player));
             return true;
         }
@@ -107,6 +105,14 @@ public class Game {
             }
         }
         return true;
+    }
+
+    private boolean validCoordinate(final Coordinate coordinate) {
+        return Game.isBetween(coordinate.x(), 0, this.maxX) && Game.isBetween(coordinate.y(), 0, this.maxY);
+    }
+
+    private boolean validCoordinates(final ShipPlacement placement) {
+        return Game.toCoordinates(placement).allMatch(this::validCoordinate);
     }
 
 }
