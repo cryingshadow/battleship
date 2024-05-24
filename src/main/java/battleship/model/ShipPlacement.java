@@ -24,6 +24,16 @@ public class ShipPlacement extends Event {
         this.player = player;
     }
 
+    @Override
+    public boolean isShipPlacementEvent(final Player player) {
+        return this.player == player;
+    }
+
+    @Override
+    public boolean isShotEvent(final Player player) {
+        return false;
+    }
+
     public Stream<Coordinate> toCoordinates() {
         final Stream.Builder<Coordinate> result = Stream.builder();
         for (int i = 0; i < this.type.length; i++) {

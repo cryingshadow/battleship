@@ -11,4 +11,14 @@ public class Shot extends Event {
         this.player = player;
     }
 
+    @Override
+    public boolean isShipPlacementEvent(final Player player) {
+        return false;
+    }
+
+    @Override
+    public boolean isShotEvent(final Player player) {
+        return this.player == player;
+    }
+
 }

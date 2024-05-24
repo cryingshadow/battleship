@@ -31,4 +31,8 @@ public abstract class Event implements Comparable<Event> {
         return this.id.hashCode();
     }
 
+    public abstract boolean isShipPlacementEvent(Player player);
+
+    public abstract boolean isShotEvent(Player player);
+
 }

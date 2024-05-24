@@ -5,107 +5,61 @@ import java.util.stream.*;
 
 public class Game {
 
-    private static boolean hasConflict(final Coordinate first, final Coordinate second) {
-        return Game.isBetween(first.x() - second.x(), -1, 1) && Game.isBetween(first.y() - second.y(), -1, 1);
-    }
-
-    private static boolean isBetween(final int number, final int lowerBound, final int upperBound) {
-        return number >= lowerBound && number <= upperBound;
-    }
-
-    private static boolean isPlacementEvent(final Event event, final Player player) {
-        return event instanceof ShipPlacement && ((ShipPlacement)event).player == player;
-    }
-
-    private static boolean isShotEvent(final Event event, final Player player) {
-        return event instanceof Shot && ((Shot)event).player != player;
+    private static void shot(final Coordinate shot, final Field[][] field) {
+        switch (field[shot.x()][shot.y()]) {
+        case WATER:
+        case WATER_HIT:
+            field[shot.x()][shot.y()] = Field.WATER_HIT;
+            break;
+        case SHIP:
+        case SHIP_HIT:
+            field[shot.x()][shot.y()] = Field.SHIP_HIT;
+            break;
+        }
     }
 
     private final List<Event> events;
 
-    private final int maxX;
-
-    private final int maxY;
-
-    public Game(final int maxX, final int maxY) {
+    public Game() {
         this.events = new LinkedList<Event>();
-        this.maxX = maxX;
-        this.maxY = maxY;
     }
 
-    public Player getWinner() {
-        if (this.allHit(Player.FIRST)) {
-            return Player.SECOND;
-        }
-        if (this.allHit(Player.SECOND)) {
-            return Player.FIRST;
-        }
-        return Player.NONE;
+    public void addEvent(final Event event) {
+        this.events.add(event);
     }
 
-    public boolean placeShip(
-        final ShipType type,
-        final Coordinate start,
-        final Direction direction,
-        final Player player
-    ) {
-        final ShipPlacement placement = new ShipPlacement(type, start, direction, player);
-        if (this.validCoordinates(placement) && this.noConflict(placement)) {
-            this.events.add(placement);
-            return true;
-        }
-        return false;
+    public Stream<Event> getEventsByPlayer(final Player player) {
+        return this.events.stream().filter(event -> event.isShipPlacementEvent(player) || event.isShotEvent(player));
     }
 
-    public boolean shot(final Coordinate coordinate, final Player player) {
-        if (this.validCoordinate(coordinate)) {
-            this.events.add(new Shot(coordinate, player));
-            return true;
-        }
-        return false;
-    }
-
-    private boolean allHit(final Player player) {
-        final Set<Coordinate> ships = this.getShipCoordinates(player);
-        ships.removeAll(this.getShotCoordinates(player));
-        return ships.isEmpty();
-    }
-
-    private Set<Coordinate> getShipCoordinates(final Player player) {
+    public Set<Coordinate> getShipCoordinates(final Player player) {
         return this.events.stream()
-            .filter(event -> Game.isPlacementEvent(event, player))
+            .filter(event -> event.isShipPlacementEvent(player))
             .flatMap(event -> ((ShipPlacement)event).toCoordinates())
             .collect(Collectors.toSet());
     }
 
-    private Set<Coordinate> getShotCoordinates(final Player player) {
+    public Set<Coordinate> getShotCoordinates(final Player player) {
         return this.events.stream()
-            .filter(event -> Game.isShotEvent(event, player))
+            .filter(event -> event.isShotEvent(player.inverse()))
             .map(event -> ((Shot)event).coordinate)
             .collect(Collectors.toSet());
     }
 
-    private boolean noConflict(final ShipPlacement placement) {
-        for (final Coordinate existing : this.getShipCoordinates(placement.player)) {
-            if (
-                placement
-                .toCoordinates()
-                .filter(coordinate -> Game.hasConflict(coordinate, existing))
-                .findAny()
-                .isPresent()
-            ) {
-                return false;
+    public Field[][] toFieldArray(final Player player, final int horizontalLength, final int verticalLength) {
+        final Field[][] result = new Field[horizontalLength][verticalLength];
+        for (int x = 0; x < horizontalLength; x++) {
+            for (int y = 0; y < verticalLength; y++) {
+                result[x][y] = Field.WATER;
             }
         }
-        return true;
-    }
-
-    private boolean validCoordinate(final Coordinate coordinate) {
-        return Game.isBetween(coordinate.x(), 0, this.maxX) && Game.isBetween(coordinate.y(), 0, this.maxY);
-    }
-
-    private boolean validCoordinates(final ShipPlacement placement) {
-        return placement.toCoordinates().allMatch(this::validCoordinate);
+        for (final Coordinate ship : this.getShipCoordinates(player)) {
+            result[ship.x()][ship.y()] = Field.SHIP;
+        }
+        for (final Coordinate shot : this.getShotCoordinates(player)) {
+            Game.shot(shot, result);
+        }
+        return result;
     }
 
 }
