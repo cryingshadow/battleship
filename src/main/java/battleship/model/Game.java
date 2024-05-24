@@ -21,14 +21,6 @@ public class Game {
         return event instanceof Shot && ((Shot)event).player != player;
     }
 
-    private static Stream<Coordinate> toCoordinates(final ShipPlacement placement) {
-        final List<Coordinate> result = new LinkedList<Coordinate>();
-        for (int i = 0; i < placement.type.length; i++) {
-            result.add(placement.start.plus(i, placement.direction));
-        }
-        return result.stream();
-    }
-
     private final List<Event> events;
 
     private final int maxX;
@@ -82,7 +74,7 @@ public class Game {
     private Set<Coordinate> getShipCoordinates(final Player player) {
         return this.events.stream()
             .filter(event -> Game.isPlacementEvent(event, player))
-            .flatMap(event -> Game.toCoordinates((ShipPlacement)event))
+            .flatMap(event -> ((ShipPlacement)event).toCoordinates())
             .collect(Collectors.toSet());
     }
 
@@ -96,7 +88,8 @@ public class Game {
     private boolean noConflict(final ShipPlacement placement) {
         for (final Coordinate existing : this.getShipCoordinates(placement.player)) {
             if (
-                Game.toCoordinates(placement)
+                placement
+                .toCoordinates()
                 .filter(coordinate -> Game.hasConflict(coordinate, existing))
                 .findAny()
                 .isPresent()
@@ -112,7 +105,7 @@ public class Game {
     }
 
     private boolean validCoordinates(final ShipPlacement placement) {
-        return Game.toCoordinates(placement).allMatch(this::validCoordinate);
+        return placement.toCoordinates().allMatch(this::validCoordinate);
     }
 
 }

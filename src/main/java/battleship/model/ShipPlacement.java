@@ -1,5 +1,7 @@
 package battleship.model;
 
+import java.util.stream.*;
+
 public class ShipPlacement extends Event {
 
     public final Direction direction;
@@ -21,4 +23,13 @@ public class ShipPlacement extends Event {
         this.direction = direction;
         this.player = player;
     }
+
+    public Stream<Coordinate> toCoordinates() {
+        final Stream.Builder<Coordinate> result = Stream.builder();
+        for (int i = 0; i < this.type.length; i++) {
+            result.add(this.start.plus(i, this.direction));
+        }
+        return result.build();
+    }
+
 }
