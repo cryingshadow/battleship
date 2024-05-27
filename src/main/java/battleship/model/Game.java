@@ -6,14 +6,14 @@ import java.util.stream.*;
 public class Game {
 
     private static void shot(final Coordinate shot, final Field[][] field) {
-        switch (field[shot.x()][shot.y()]) {
+        switch (field[shot.y()][shot.x()]) {
         case WATER:
         case WATER_HIT:
-            field[shot.x()][shot.y()] = Field.WATER_HIT;
+            field[shot.y()][shot.x()] = Field.WATER_HIT;
             break;
         case SHIP:
         case SHIP_HIT:
-            field[shot.x()][shot.y()] = Field.SHIP_HIT;
+            field[shot.y()][shot.x()] = Field.SHIP_HIT;
             break;
         }
     }
@@ -50,11 +50,11 @@ public class Game {
         final Field[][] result = new Field[horizontalLength][verticalLength];
         for (int x = 0; x < horizontalLength; x++) {
             for (int y = 0; y < verticalLength; y++) {
-                result[x][y] = Field.WATER;
+                result[y][x] = Field.WATER;
             }
         }
         for (final Coordinate ship : this.getShipCoordinates(player)) {
-            result[ship.x()][ship.y()] = Field.SHIP;
+            result[ship.y()][ship.x()] = Field.SHIP;
         }
         for (final Coordinate shot : this.getShotCoordinates(player)) {
             Game.shot(shot, result);

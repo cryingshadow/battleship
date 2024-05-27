@@ -14,12 +14,15 @@ public class FieldDisplay extends JButton {
 
     private static void drawShip(final Graphics g, final int width, final int height) {
         g.setColor(Color.BLACK);
-        g.fillOval(width / 2, height / 2, width / 2, height / 2);
+        g.fillOval(1, 1, width - 2, height - 2);
     }
 
     private Field field;
 
+    private int size;
+
     public FieldDisplay(final Field field, final Coordinate coordinate, final Consumer<Coordinate> listener) {
+        this.size = 20;
         this.field = field;
         this.addActionListener(
             new ActionListener() {
@@ -34,12 +37,24 @@ public class FieldDisplay extends JButton {
     }
 
     @Override
+    public Dimension getPreferredSize() {
+        return this.getSize();
+    }
+
+    @Override
+    public Dimension getSize() {
+        return new Dimension(this.size, this.size);
+    }
+
+    @Override
     public void paint(final Graphics g) {
         final Dimension size = this.getSize();
         final int width = size.width;
         final int height = size.height;
-        g.setColor(new Color(50, 50, 200));
+        g.setColor(new Color(100, 100, 200));
         g.fillRect(0, 0, width, height);
+        g.setColor(new Color(200, 200, 200));
+        g.drawRect(0, 0, width, height);
         switch (this.field) {
         case WATER_HIT:
             g.setColor(Color.WHITE);
@@ -52,7 +67,7 @@ public class FieldDisplay extends JButton {
         case SHIP_HIT:
             FieldDisplay.drawShip(g, width, height);
             g.setColor(Color.RED);
-            g.fillOval(width / 2, height / 2, width / 2 - 2, height / 2 - 2);
+            g.fillOval(5, 5, width - 10, height - 10);
             break;
         default:
             // do nothing
@@ -61,6 +76,12 @@ public class FieldDisplay extends JButton {
 
     public void setField(final Field field) {
         this.field = field;
+        this.repaint();
+    }
+
+    public void setSize(final int size) {
+        this.size = size;
+        this.invalidate();
         this.repaint();
     }
 
