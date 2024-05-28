@@ -17,19 +17,25 @@ public class FieldDisplay extends JButton {
         g.fillOval(1, 1, width - 2, height - 2);
     }
 
+    private final Coordinate coordinate;
+
     private Field field;
 
     private int size;
 
-    public FieldDisplay(final Field field, final Coordinate coordinate, final Consumer<Coordinate> listener) {
+    public FieldDisplay(final Field field, final Coordinate coordinate) {
         this.size = 20;
         this.field = field;
+        this.coordinate = coordinate;
+    }
+
+    public void addListener(final Consumer<Coordinate> listener) {
         this.addActionListener(
             new ActionListener() {
 
                 @Override
                 public void actionPerformed(final ActionEvent e) {
-                    listener.accept(coordinate);
+                    listener.accept(FieldDisplay.this.coordinate);
                 }
 
             }

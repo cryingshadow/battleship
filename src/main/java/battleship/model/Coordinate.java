@@ -1,25 +1,25 @@
 package battleship.model;
 
-public record Coordinate(int x, int y) {
+public record Coordinate(int column, int row) {
 
-    public Coordinate plusX(final int x) {
-        return new Coordinate(this.x + x, this.y);
+    public Coordinate plusColumn(final int column) {
+        return new Coordinate(this.column + column, this.row);
     }
 
-    public Coordinate plusY(final int y) {
-        return new Coordinate(this.x, this.y + y);
+    public Coordinate plusRow(final int row) {
+        return new Coordinate(this.column, this.row + row);
     }
 
     public Coordinate plus(final int length, final Direction direction) {
         switch (direction) {
         case NORTH:
-            return this.plusY(-length);
+            return this.plusRow(-length);
         case SOUTH:
-            return this.plusY(length);
+            return this.plusRow(length);
         case WEST:
-            return this.plusX(-length);
+            return this.plusColumn(-length);
         case EAST:
-            return this.plusX(length);
+            return this.plusColumn(length);
         default:
             throw new IllegalStateException("Unknown direction!");
         }

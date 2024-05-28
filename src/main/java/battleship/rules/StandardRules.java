@@ -33,36 +33,42 @@ public class StandardRules implements Rules {
             return new Turn(
                 player,
                 event -> this.shipPlacement(game, ShipType.CARRIER, player, event),
+                Optional.of(ShipType.CARRIER),
                 "Geben Sie die Koordinaten Ihres Flugzeugträgers ein!"
             );
         case 1:
             return new Turn(
                 player,
                 event -> this.shipPlacement(game, ShipType.BATTLESHIP, player, event),
+                Optional.of(ShipType.BATTLESHIP),
                 "Geben Sie die Koordinaten Ihres Schlachtschiffs ein!"
             );
         case 2:
             return new Turn(
                 player,
                 event -> this.shipPlacement(game, ShipType.CRUISER, player, event),
+                Optional.of(ShipType.CRUISER),
                 "Geben Sie die Koordinaten Ihres Kreuzers ein!"
             );
         case 3:
             return new Turn(
                 player,
                 event -> this.shipPlacement(game, ShipType.DESTROYER, player, event),
+                Optional.of(ShipType.DESTROYER),
                 "Geben Sie die Koordinaten Ihres Zerstörers ein!"
             );
         case 4:
             return new Turn(
                 player,
                 event -> this.shipPlacement(game, ShipType.CANNON_BOAT, player, event),
+                Optional.of(ShipType.CANNON_BOAT),
                 "Geben Sie die Koordinaten Ihres Kanonenboots ein!"
             );
         default:
             return new Turn(
                 player,
                 event -> this.shot(game, player, event),
+                Optional.empty(),
                 "Geben Sie die Koordinaten Ihres nächsten Schusses ein!"
             );
         }
@@ -86,8 +92,8 @@ public class StandardRules implements Rules {
 
     @Override
     public boolean placementConflict(final Coordinate first, final Coordinate second) {
-        return Rules.isBetween(first.x() - second.x(), -1, 1)
-            && Rules.isBetween(first.y() - second.y(), -1, 1);
+        return Rules.isBetween(first.column() - second.column(), -1, 1)
+            && Rules.isBetween(first.row() - second.row(), -1, 1);
     }
 
 }

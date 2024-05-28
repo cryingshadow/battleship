@@ -5,15 +5,22 @@ import java.util.stream.*;
 
 public class Game {
 
+    private static boolean hasCoordinate(final Event event, final Coordinate coordinate) {
+        if (event instanceof Shot) {
+            return ((Shot)event).coordinate.equals(coordinate);
+        }
+        return ((ShipPlacement)event).toCoordinates().filter(c -> c.equals(coordinate)).findAny().isPresent();
+    }
+
     private static void shot(final Coordinate shot, final Field[][] field) {
-        switch (field[shot.y()][shot.x()]) {
+        switch (field[shot.row()][shot.column()]) {
         case WATER:
         case WATER_HIT:
-            field[shot.y()][shot.x()] = Field.WATER_HIT;
+            field[shot.row()][shot.column()] = Field.WATER_HIT;
             break;
         case SHIP:
         case SHIP_HIT:
-            field[shot.y()][shot.x()] = Field.SHIP_HIT;
+            field[shot.row()][shot.column()] = Field.SHIP_HIT;
             break;
         }
     }
@@ -30,6 +37,18 @@ public class Game {
 
     public Stream<Event> getEventsByPlayer(final Player player) {
         return this.events.stream().filter(event -> event.isShipPlacementEvent(player) || event.isShotEvent(player));
+    }
+
+    public Field getField(final Player player, final Coordinate coordinate) {
+        return this.events.stream()
+            .filter(event -> event.isShipPlacementEvent(player) || event.isShotEvent(player.inverse()))
+            .filter(event -> Game.hasCoordinate(event, coordinate))
+            .reduce(
+                Field.WATER,
+                (field, event) -> event.isShipPlacementEvent(player) ?
+                    Field.SHIP :
+                        (field == Field.WATER || field == Field.WATER_HIT ? Field.WATER_HIT : Field.SHIP_HIT),
+                (field1, field2) -> field2);
     }
 
     public Set<Coordinate> getShipCoordinates(final Player player) {
@@ -54,7 +73,7 @@ public class Game {
             }
         }
         for (final Coordinate ship : this.getShipCoordinates(player)) {
-            result[ship.y()][ship.x()] = Field.SHIP;
+            result[ship.row()][ship.column()] = Field.SHIP;
         }
         for (final Coordinate shot : this.getShotCoordinates(player)) {
             Game.shot(shot, result);
