@@ -65,11 +65,16 @@ public class Game {
             .collect(Collectors.toSet());
     }
 
-    public Field[][] toFieldArray(final Player player, final int horizontalLength, final int verticalLength) {
+    public Field[][] toFieldArray(
+        final Player player,
+        final int horizontalLength,
+        final int verticalLength,
+        final boolean showShips
+    ) {
         final Field[][] result = new Field[horizontalLength][verticalLength];
-        for (int x = 0; x < horizontalLength; x++) {
-            for (int y = 0; y < verticalLength; y++) {
-                result[y][x] = Field.WATER;
+        for (int column = 0; column < horizontalLength; column++) {
+            for (int row = 0; row < verticalLength; row++) {
+                result[row][column] = Field.WATER;
             }
         }
         for (final Coordinate ship : this.getShipCoordinates(player)) {
@@ -77,6 +82,15 @@ public class Game {
         }
         for (final Coordinate shot : this.getShotCoordinates(player)) {
             Game.shot(shot, result);
+        }
+        if (!showShips) {
+            for (int column = 0; column < horizontalLength; column++) {
+                for (int row = 0; row < verticalLength; row++) {
+                    if (result[row][column] == Field.SHIP) {
+                        result[row][column] = Field.WATER;
+                    }
+                }
+            }
         }
         return result;
     }

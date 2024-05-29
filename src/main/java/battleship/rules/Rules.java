@@ -1,5 +1,7 @@
 package battleship.rules;
 
+import java.util.*;
+
 import battleship.model.*;
 
 public interface Rules {
@@ -10,33 +12,36 @@ public interface Rules {
 
     int getHorizontalLength();
 
-    Turn getNextTurn(Game game);
+    Optional<Turn> getNextTurn(final Game game);
 
     int getVerticalLength();
 
-    Player getWinner(Game game);
+    Optional<Player> getWinner(final Game game);
 
-    default boolean noConflict(final ShipPlacement placement, final Game game) {
-        for (final Coordinate existing : game.getShipCoordinates(placement.player)) {
+    default boolean noConflict(final ShipPlacement placement, final Collection<Coordinate> shipCoordinates) {
+        for (final Coordinate existing : shipCoordinates) {
             if (
                 placement
                 .toCoordinates()
                 .filter(coordinate -> this.placementConflict(coordinate, existing))
                 .findAny()
                 .isPresent()
-                ) {
+            ) {
                 return false;
             }
         }
         return true;
     }
 
-    boolean placementConflict(Coordinate first, Coordinate second);
+    boolean placementConflict(final Coordinate first, final Coordinate second);
 
     default boolean shipPlacement(final Game game, final ShipType type, final Player player, final Event event) {
         if (event.isShipPlacementEvent(player)) {
             final ShipPlacement placement = (ShipPlacement)event;
-            if (placement.type == type && this.validCoordinates(placement) && this.noConflict(placement, game)) {
+            if (
+                placement.type == type
+                && this.validShipPlacement(placement, game.getShipCoordinates(placement.player))
+            ) {
                 game.addEvent(event);
                 return true;
             }
@@ -62,6 +67,10 @@ public interface Rules {
 
     default boolean validCoordinates(final ShipPlacement placement) {
         return placement.toCoordinates().allMatch(this::validCoordinate);
+    }
+
+    default boolean validShipPlacement(final ShipPlacement placement, final Collection<Coordinate> shipCoordinates) {
+        return this.validCoordinates(placement) && this.noConflict(placement, shipCoordinates);
     }
 
 }
