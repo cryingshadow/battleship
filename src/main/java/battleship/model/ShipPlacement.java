@@ -15,7 +15,7 @@ public class ShipPlacement extends Event {
         if (start.column() - end.column() < 0) {
             return Optional.of(Direction.EAST);
         }
-        if (start.row() - end.row() > 0) {
+        if (start.row() - end.row() < 0) {
             return Optional.of(Direction.SOUTH);
         }
         return Optional.of(Direction.NORTH);

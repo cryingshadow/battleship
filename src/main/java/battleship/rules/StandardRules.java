@@ -25,6 +25,16 @@ public class StandardRules implements Rules {
     }
 
     @Override
+    public Set<Coordinate> getImpossibleCoordinatesAfterHit(
+        final Player player,
+        final Coordinate hit,
+        final Game game
+    ) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
     public Optional<Turn> getNextTurn(final Game game) {
         if (this.getWinner(game).isPresent()) {
             return Optional.empty();
@@ -96,6 +106,12 @@ public class StandardRules implements Rules {
 
     @Override
     public Optional<Player> getWinner(final Game game) {
+        if (
+            game.getEventsByPlayer(Player.FIRST).findAny().isEmpty()
+            || game.getEventsByPlayer(Player.SECOND).findAny().isEmpty()
+        ) {
+            return Optional.empty();
+        }
         if (StandardRules.allHit(Player.FIRST, game)) {
             return Optional.of(Player.SECOND);
         }
