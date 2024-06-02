@@ -1,6 +1,7 @@
 package battleship.rules;
 
 import java.util.*;
+import java.util.stream.*;
 
 import battleship.model.*;
 
@@ -19,19 +20,49 @@ public class StandardRules implements Rules {
         return Player.FIRST;
     }
 
+    private static Stream<Coordinate> toSurroundingCoordinates(final Coordinate coordinate) {
+        final Stream.Builder<Coordinate> result = Stream.builder();
+        result.accept(coordinate.plusColumn(1));
+        result.accept(coordinate.plusColumn(-1));
+        result.accept(coordinate.plusRow(1));
+        result.accept(coordinate.plusRow(-1));
+        result.accept(coordinate.plusColumn(1).plusRow(1));
+        result.accept(coordinate.plusColumn(1).plusRow(-1));
+        result.accept(coordinate.plusColumn(-1).plusRow(1));
+        result.accept(coordinate.plusColumn(-1).plusRow(-1));
+        return result.build();
+    }
+
     @Override
     public int getHorizontalLength() {
         return 10;
     }
 
     @Override
-    public Set<Coordinate> getImpossibleCoordinatesAfterHit(
+    public Set<Coordinate> getImpossibleCoordinatesAfterShot(
         final Player player,
-        final Coordinate hit,
+        final Coordinate shot,
         final Game game
     ) {
-        // TODO Auto-generated method stub
-        return null;
+        final Optional<Event> placementCandidate =
+            game
+            .getEventsByPlayer(player)
+            .filter(event -> (event instanceof ShipPlacement))
+            .filter(event -> ((ShipPlacement)event).toCoordinates().anyMatch(coordinate -> coordinate.equals(shot)))
+            .findAny();
+        if (placementCandidate.isEmpty()) {
+            return Collections.emptySet();
+        }
+        final ShipPlacement placement = (ShipPlacement)placementCandidate.get();
+        if (placement.toCoordinates().allMatch(coordinate -> game.getField(player, coordinate) == Field.SHIP_HIT)) {
+            return placement
+                .toCoordinates()
+                .flatMap(coordinate -> StandardRules.toSurroundingCoordinates(coordinate))
+                .filter(coordinate -> !placement.toCoordinates().anyMatch(c -> c.equals(coordinate)))
+                .filter(coordinate -> this.validCoordinate(coordinate))
+                .collect(Collectors.toSet());
+        }
+        return Collections.emptySet();
     }
 
     @Override

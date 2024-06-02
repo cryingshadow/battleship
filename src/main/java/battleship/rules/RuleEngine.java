@@ -92,7 +92,7 @@ public class RuleEngine {
             this.opponentFieldListener.accept(coordinate, this.game.getField(Player.SECOND, coordinate));
             for (
                 final Coordinate waterHit :
-                    this.rules.getImpossibleCoordinatesAfterHit(Player.SECOND, coordinate, this.game)
+                    this.rules.getImpossibleCoordinatesAfterShot(Player.SECOND, coordinate, this.game)
             ) {
                 this.opponentFieldListener.accept(waterHit, Field.WATER_HIT);
             }
@@ -121,7 +121,7 @@ public class RuleEngine {
                     this.ownFieldListener.accept(shot.coordinate, this.game.getField(Player.FIRST, shot.coordinate));
                     for (
                         final Coordinate waterHit :
-                            this.rules.getImpossibleCoordinatesAfterHit(Player.FIRST, shot.coordinate, this.game)
+                            this.rules.getImpossibleCoordinatesAfterShot(Player.FIRST, shot.coordinate, this.game)
                     ) {
                         this.ownFieldListener.accept(waterHit, Field.WATER_HIT);
                     }
