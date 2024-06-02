@@ -18,6 +18,8 @@ public class RuleEngine {
 
     private Optional<Turn> currentTurn;
 
+    private final ErrorMessenger errorMessenger;
+
     private final Game game;
 
     private final AI opponent;
@@ -35,13 +37,15 @@ public class RuleEngine {
         final AI opponent,
         final FieldListener ownFieldListener,
         final FieldListener opponentFieldListener,
-        final JLabel status
+        final JLabel status,
+        final ErrorMessenger errorMessenger
     ) {
         this.rules = rules;
         this.opponent = opponent;
         this.ownFieldListener = ownFieldListener;
         this.opponentFieldListener = opponentFieldListener;
         this.status = status;
+        this.errorMessenger = errorMessenger;
         this.coordinates = new Stack<Coordinate>();
         this.game = new Game();
         this.currentTurn = this.getNextTurn();
@@ -75,7 +79,19 @@ public class RuleEngine {
                 placement.toCoordinates().forEach(c -> this.ownFieldListener.accept(c, Field.SHIP));
                 this.currentTurn = this.getNextTurn();
                 return true;
+            } else {
+                this.errorMessenger.accept(
+                    "Diese Platzierung verletzt die Abstandsregeln zu bereits platzierten Schiffen!"
+                );
             }
+        } else {
+            this.errorMessenger.accept(
+                String.format(
+                    "Ein %s hat eine Länge von %d und muss waagerecht oder senkrecht platziert werden!",
+                    toPlace.name,
+                    toPlace.length
+                )
+            );
         }
         return false;
     }

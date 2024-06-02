@@ -15,12 +15,16 @@ public class Main {
         final JLabel status = new JLabel();
         final FieldListener listener1 = new FieldListener(grid1);
         final FieldListener listener2 = new FieldListener(grid2);
-        final RuleEngine engine = new RuleEngine(new StandardRules(), new SimpleAI(), listener1, listener2, status);
+        final MainFrame frame = new MainFrame(grid1, grid2, status);
+        final ErrorMessenger errorMessenger = new ErrorMessenger(frame);
+        final RuleEngine engine =
+            new RuleEngine(new StandardRules(), new SimpleAI(), listener1, listener2, status, errorMessenger);
         grid1.setFields(engine.getFields(Player.FIRST));
         grid2.setFields(engine.getFields(Player.SECOND));
         grid1.addListener(new PlacementListener(engine, Player.FIRST));
         grid2.addListener(new ShotListener(engine, Player.FIRST));
-        new MainFrame(grid1, grid2, status).setVisible(true);
+        frame.pack();
+        frame.setVisible(true);
     }
 
     public boolean someLibraryMethod() {

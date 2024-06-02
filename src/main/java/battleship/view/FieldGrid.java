@@ -37,6 +37,9 @@ public class FieldGrid extends JPanel {
 
     @Override
     public Dimension getSize() {
+        if (this.fields.length == 0) {
+            return new Dimension(0, 0);
+        }
         final int size = this.fields[0][0].getSize().width;
         return new Dimension(size * (this.fields[0].length + 1), size * (this.fields.length + 1));
     }
