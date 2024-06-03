@@ -12,7 +12,11 @@ public interface Rules {
 
     int getHorizontalLength();
 
-    Set<Coordinate> getImpossibleCoordinatesAfterShot(final Player player, final Coordinate hit, final Game game);
+    Set<Coordinate> getImpossibleCoordinatesAfterShot(
+        final Player playerWhoShot,
+        final Coordinate shot,
+        final Game game
+    );
 
     Optional<Turn> getNextTurn(final Game game);
 

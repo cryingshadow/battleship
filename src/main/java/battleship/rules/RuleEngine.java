@@ -14,6 +14,26 @@ public class RuleEngine {
         return player == Player.FIRST ? "Du hast gewonnen!" : "Der Computer hat gewonnen!";
     }
 
+    private static boolean hasCoordinate(final Event event, final Coordinate coordinate) {
+        if (event instanceof Shot) {
+            return ((Shot)event).coordinate.equals(coordinate);
+        }
+        return ((ShipPlacement)event).toCoordinates().filter(c -> c.equals(coordinate)).findAny().isPresent();
+    }
+
+    private static void shot(final Coordinate shot, final Field[][] field) {
+        switch (field[shot.row()][shot.column()]) {
+        case WATER:
+        case WATER_HIT:
+            field[shot.row()][shot.column()] = Field.WATER_HIT;
+            break;
+        case SHIP:
+        case SHIP_HIT:
+            field[shot.row()][shot.column()] = Field.SHIP_HIT;
+            break;
+        }
+    }
+
     private final Stack<Coordinate> coordinates;
 
     private Optional<Turn> currentTurn;
@@ -49,10 +69,6 @@ public class RuleEngine {
         this.coordinates = new Stack<Coordinate>();
         this.game = new Game();
         this.currentTurn = this.getNextTurn();
-    }
-
-    public Field[][] getFields(final Player player) {
-        return this.getFields(player, true);
     }
 
     public boolean placement(final Coordinate coordinate, final Player player) {
@@ -105,10 +121,11 @@ public class RuleEngine {
             return false;
         }
         if (this.currentTurn.get().action().apply(new Shot(coordinate, player))) {
-            this.opponentFieldListener.accept(coordinate, this.game.getField(Player.SECOND, coordinate));
+            final FieldListener listener = player == Player.FIRST ? this.opponentFieldListener : this.ownFieldListener;
+            listener.accept(coordinate, this.getField(player.inverse(), coordinate));
             for (
                 final Coordinate waterHit :
-                    this.rules.getImpossibleCoordinatesAfterShot(Player.SECOND, coordinate, this.game)
+                    this.rules.getImpossibleCoordinatesAfterShot(player, coordinate, this.game)
             ) {
                 this.opponentFieldListener.accept(waterHit, Field.WATER_HIT);
             }
@@ -118,13 +135,61 @@ public class RuleEngine {
         return false;
     }
 
-    private Field[][] getFields(final Player player, final boolean showShips) {
-        return this.game.toFieldArray(
-            player,
-            this.rules.getHorizontalLength(),
-            this.rules.getVerticalLength(),
-            showShips
-        );
+    public Field[][] toFieldArray(final Player player, final boolean showShips) {
+        final int horizontalLength = this.rules.getHorizontalLength();
+        final int verticalLength = this.rules.getVerticalLength();
+        final Field[][] result = new Field[horizontalLength][verticalLength];
+        for (int column = 0; column < horizontalLength; column++) {
+            for (int row = 0; row < verticalLength; row++) {
+                result[row][column] = Field.WATER;
+            }
+        }
+        for (final Coordinate ship : this.game.getShipCoordinates(player)) {
+            result[ship.row()][ship.column()] = Field.SHIP;
+        }
+        for (final Coordinate shot : this.game.getActualShotCoordinates(player.inverse())) {
+            RuleEngine.shot(shot, result);
+            for (
+                final Coordinate waterHit :
+                    this.rules.getImpossibleCoordinatesAfterShot(player.inverse(), shot, this.game)
+            ) {
+                result[waterHit.row()][waterHit.column()] = Field.WATER_HIT;
+            }
+        }
+        if (!showShips) {
+            for (int column = 0; column < horizontalLength; column++) {
+                for (int row = 0; row < verticalLength; row++) {
+                    if (result[row][column] == Field.SHIP) {
+                        result[row][column] = Field.WATER;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private Field getField(final Player player, final Coordinate coordinate) {
+        final Field result =
+            this.game.getEvents()
+            .filter(event -> event.isShipPlacementEvent(player) || event.isShotEvent(player.inverse()))
+            .filter(event -> RuleEngine.hasCoordinate(event, coordinate))
+            .reduce(
+                Field.WATER,
+                (field, event) -> event.isShipPlacementEvent(player) ?
+                    Field.SHIP :
+                        (field == Field.WATER || field == Field.WATER_HIT ? Field.WATER_HIT : Field.SHIP_HIT),
+                (field1, field2) -> field2);
+        if (result != Field.WATER) {
+            return result;
+        }
+        return
+            this.game.getActualShotCoordinates(player.inverse()).stream()
+            .flatMap(c -> this.rules.getImpossibleCoordinatesAfterShot(player.inverse(), c, this.game).stream())
+            .filter(c -> c.equals(coordinate))
+            .findAny()
+            .isPresent() ?
+                Field.WATER_HIT :
+                    Field.WATER;
     }
 
     private Optional<Turn> getNextTurn() {
@@ -132,12 +197,15 @@ public class RuleEngine {
         while (result.isPresent() && result.get().player() == Player.SECOND) {
             final Turn turn = result.get();
             if (turn.toPlace().isEmpty()) {
-                final Shot shot = this.opponent.getShot(this.rules, this.getFields(Player.FIRST, false));
+                final Shot shot = this.opponent.getShot(this.rules, this.toFieldArray(Player.FIRST, false));
                 if (turn.action().apply(shot)) {
-                    this.ownFieldListener.accept(shot.coordinate, this.game.getField(Player.FIRST, shot.coordinate));
+                    this.ownFieldListener.accept(
+                        shot.coordinate,
+                        this.getField(Player.FIRST, shot.coordinate)
+                    );
                     for (
                         final Coordinate waterHit :
-                            this.rules.getImpossibleCoordinatesAfterShot(Player.FIRST, shot.coordinate, this.game)
+                            this.rules.getImpossibleCoordinatesAfterShot(Player.SECOND, shot.coordinate, this.game)
                     ) {
                         this.ownFieldListener.accept(waterHit, Field.WATER_HIT);
                     }
@@ -147,7 +215,7 @@ public class RuleEngine {
                 turn.action().apply(
                     this.opponent.getShipPlacement(
                         this.rules,
-                        this.getFields(Player.SECOND),
+                        this.toFieldArray(Player.SECOND, true),
                         turn.toPlace().get()
                     )
                 )

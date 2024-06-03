@@ -9,8 +9,12 @@ public abstract class Event implements Comparable<Event> {
     public final long timestamp;
 
     public Event() {
-        this.id = UUID.randomUUID();
-        this.timestamp = System.currentTimeMillis();
+        this(UUID.randomUUID(), System.currentTimeMillis());
+    }
+
+    public Event(final UUID id, final long timestamp) {
+        this.id = id;
+        this.timestamp = timestamp;
     }
 
     @Override

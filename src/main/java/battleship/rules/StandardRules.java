@@ -9,7 +9,7 @@ public class StandardRules implements Rules {
 
     private static boolean allHit(final Player player, final Game game) {
         final Set<Coordinate> ships = game.getShipCoordinates(player);
-        ships.removeAll(game.getShotCoordinates(player));
+        ships.removeAll(game.getActualShotCoordinates(player));
         return ships.isEmpty();
     }
 
@@ -40,13 +40,13 @@ public class StandardRules implements Rules {
 
     @Override
     public Set<Coordinate> getImpossibleCoordinatesAfterShot(
-        final Player player,
+        final Player playerWhoShot,
         final Coordinate shot,
         final Game game
     ) {
         final Optional<Event> placementCandidate =
             game
-            .getEventsByPlayer(player)
+            .getEventsByPlayer(playerWhoShot.inverse())
             .filter(event -> (event instanceof ShipPlacement))
             .filter(event -> ((ShipPlacement)event).toCoordinates().anyMatch(coordinate -> coordinate.equals(shot)))
             .findAny();
@@ -54,7 +54,8 @@ public class StandardRules implements Rules {
             return Collections.emptySet();
         }
         final ShipPlacement placement = (ShipPlacement)placementCandidate.get();
-        if (placement.toCoordinates().allMatch(coordinate -> game.getField(player, coordinate) == Field.SHIP_HIT)) {
+        final Set<Coordinate> shots = game.getActualShotCoordinates(playerWhoShot);
+        if (placement.toCoordinates().allMatch(coordinate -> shots.contains(coordinate))) {
             return placement
                 .toCoordinates()
                 .flatMap(coordinate -> StandardRules.toSurroundingCoordinates(coordinate))
@@ -154,8 +155,8 @@ public class StandardRules implements Rules {
 
     @Override
     public boolean placementConflict(final Coordinate first, final Coordinate second) {
-        return Rules.isBetween(first.column() - second.column(), -1, 1)
-            && Rules.isBetween(first.row() - second.row(), -1, 1);
+        return Rules.isBetween(first.column() - second.column(), -1, 2)
+            && Rules.isBetween(first.row() - second.row(), -1, 2);
     }
 
 }
