@@ -1,6 +1,7 @@
 package battleship.model;
 
 import java.util.*;
+import java.util.stream.*;
 
 import org.testng.*;
 import org.testng.annotations.*;
@@ -118,12 +119,49 @@ public class GameTest {
 
     @Test
     public void getEventsByPlayerTest() {
-        throw new RuntimeException("Test not implemented");
+        final Set<Event> actual1 = GameTest.GAME.getEventsByPlayer(Player.FIRST).collect(Collectors.toSet());
+        final Set<Event> expected1 =
+            Set.of(
+                GameTest.PLACEMENT01,
+                GameTest.PLACEMENT03,
+                GameTest.PLACEMENT05,
+                GameTest.SHOT01,
+                GameTest.SHOT03,
+                GameTest.SHOT05,
+                GameTest.SHOT07,
+                GameTest.SHOT09,
+                GameTest.SHOT11,
+                GameTest.SHOT13
+            );
+        Assert.assertEquals(actual1, expected1);
+        final Set<Event> actual2 = GameTest.GAME.getEventsByPlayer(Player.SECOND).collect(Collectors.toSet());
+        final Set<Event> expected2 =
+            Set.of(
+                GameTest.PLACEMENT02,
+                GameTest.PLACEMENT04,
+                GameTest.PLACEMENT06,
+                GameTest.SHOT02,
+                GameTest.SHOT04,
+                GameTest.SHOT06,
+                GameTest.SHOT08,
+                GameTest.SHOT10,
+                GameTest.SHOT12
+            );
+        Assert.assertEquals(actual2, expected2);
     }
 
     @Test
     public void getShipCoordinatesTest() {
-        throw new RuntimeException("Test not implemented");
+        final Set<Coordinate> expected1 = new LinkedHashSet<Coordinate>();
+        expected1.addAll(GameTest.PLACEMENT01.toCoordinates().toList());
+        expected1.addAll(GameTest.PLACEMENT03.toCoordinates().toList());
+        expected1.addAll(GameTest.PLACEMENT05.toCoordinates().toList());
+        Assert.assertEquals(GameTest.GAME.getShipCoordinates(Player.FIRST), expected1);
+        final Set<Coordinate> expected2 = new LinkedHashSet<Coordinate>();
+        expected2.addAll(GameTest.PLACEMENT02.toCoordinates().toList());
+        expected2.addAll(GameTest.PLACEMENT04.toCoordinates().toList());
+        expected2.addAll(GameTest.PLACEMENT06.toCoordinates().toList());
+        Assert.assertEquals(GameTest.GAME.getShipCoordinates(Player.SECOND), expected2);
     }
 
 }
