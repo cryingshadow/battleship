@@ -155,8 +155,8 @@ public class StandardRules implements Rules {
 
     @Override
     public boolean placementConflict(final Coordinate first, final Coordinate second) {
-        return Rules.isBetween(first.column() - second.column(), -1, 2)
-            && Rules.isBetween(first.row() - second.row(), -1, 2);
+        return Rules.isBetween(-1, first.column() - second.column(), 2)
+            && Rules.isBetween(-1, first.row() - second.row(), 2);
     }
 
 }

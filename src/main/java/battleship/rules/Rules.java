@@ -6,7 +6,7 @@ import battleship.model.*;
 
 public interface Rules {
 
-    public static boolean isBetween(final int number, final int lowerBoundInclusive, final int upperBoundExclusive) {
+    public static boolean isBetween(final int lowerBoundInclusive, final int number, final int upperBoundExclusive) {
         return number >= lowerBoundInclusive && number < upperBoundExclusive;
     }
 
@@ -67,8 +67,8 @@ public interface Rules {
     }
 
     default boolean validCoordinate(final Coordinate coordinate) {
-        return Rules.isBetween(coordinate.column(), 0, this.getHorizontalLength())
-            && Rules.isBetween(coordinate.row(), 0, this.getVerticalLength());
+        return Rules.isBetween(0, coordinate.column(), this.getHorizontalLength())
+            && Rules.isBetween(0, coordinate.row(), this.getVerticalLength());
     }
 
     default boolean validCoordinates(final ShipPlacement placement) {
