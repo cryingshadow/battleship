@@ -24,21 +24,6 @@ public interface Rules {
 
     Optional<Player> getWinner(final Game game);
 
-    default boolean noConflict(final ShipPlacement placement, final Collection<Coordinate> shipCoordinates) {
-        for (final Coordinate existing : shipCoordinates) {
-            if (
-                placement
-                .toCoordinates()
-                .filter(coordinate -> this.placementConflict(coordinate, existing))
-                .findAny()
-                .isPresent()
-            ) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     boolean placementConflict(final Coordinate first, final Coordinate second);
 
     default boolean shipPlacement(final Game game, final ShipType type, final Player player, final Event event) {
@@ -71,12 +56,27 @@ public interface Rules {
             && Rules.isBetween(0, coordinate.row(), this.getVerticalLength());
     }
 
-    default boolean validCoordinates(final ShipPlacement placement) {
-        return placement.toCoordinates().allMatch(this::validCoordinate);
+    default boolean validShipPlacement(final ShipPlacement placement, final Collection<Coordinate> shipCoordinates) {
+        return this.validPlacementCoordinates(placement) && this.noConflict(placement, shipCoordinates);
     }
 
-    default boolean validShipPlacement(final ShipPlacement placement, final Collection<Coordinate> shipCoordinates) {
-        return this.validCoordinates(placement) && this.noConflict(placement, shipCoordinates);
+    private boolean noConflict(final ShipPlacement placement, final Collection<Coordinate> shipCoordinates) {
+        for (final Coordinate existing : shipCoordinates) {
+            if (
+                placement
+                .toCoordinates()
+                .filter(coordinate -> this.placementConflict(coordinate, existing))
+                .findAny()
+                .isPresent()
+            ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean validPlacementCoordinates(final ShipPlacement placement) {
+        return placement.toCoordinates().allMatch(this::validCoordinate);
     }
 
 }
