@@ -8,8 +8,6 @@ import org.testng.annotations.*;
 
 public class GameTest {
 
-    public static final Game GAME;
-
     private static final ShipPlacement PLACEMENT01;
 
     private static final ShipPlacement PLACEMENT02;
@@ -68,32 +66,37 @@ public class GameTest {
         SHOT11 = new Shot(new Coordinate(4, 7), Player.FIRST);
         SHOT12 = new Shot(new Coordinate(5, 5), Player.SECOND);
         SHOT13 = new Shot(new Coordinate(2, 7), Player.FIRST);
-        GAME = new Game();
-        GameTest.GAME.addEvent(GameTest.PLACEMENT01);
-        GameTest.GAME.addEvent(GameTest.PLACEMENT02);
-        GameTest.GAME.addEvent(GameTest.PLACEMENT03);
-        GameTest.GAME.addEvent(GameTest.PLACEMENT04);
-        GameTest.GAME.addEvent(GameTest.PLACEMENT05);
-        GameTest.GAME.addEvent(GameTest.PLACEMENT06);
-        GameTest.GAME.addEvent(GameTest.SHOT01);
-        GameTest.GAME.addEvent(GameTest.SHOT02);
-        GameTest.GAME.addEvent(GameTest.SHOT03);
-        GameTest.GAME.addEvent(GameTest.SHOT04);
-        GameTest.GAME.addEvent(GameTest.SHOT05);
-        GameTest.GAME.addEvent(GameTest.SHOT06);
-        GameTest.GAME.addEvent(GameTest.SHOT07);
-        GameTest.GAME.addEvent(GameTest.SHOT08);
-        GameTest.GAME.addEvent(GameTest.SHOT09);
-        GameTest.GAME.addEvent(GameTest.SHOT10);
-        GameTest.GAME.addEvent(GameTest.SHOT11);
-        GameTest.GAME.addEvent(GameTest.SHOT12);
-        GameTest.GAME.addEvent(GameTest.SHOT13);
+    }
+
+    public static final Game getPreparedGame() {
+        final Game result = new Game();
+        result.addEvent(GameTest.PLACEMENT01);
+        result.addEvent(GameTest.PLACEMENT02);
+        result.addEvent(GameTest.PLACEMENT03);
+        result.addEvent(GameTest.PLACEMENT04);
+        result.addEvent(GameTest.PLACEMENT05);
+        result.addEvent(GameTest.PLACEMENT06);
+        result.addEvent(GameTest.SHOT01);
+        result.addEvent(GameTest.SHOT02);
+        result.addEvent(GameTest.SHOT03);
+        result.addEvent(GameTest.SHOT04);
+        result.addEvent(GameTest.SHOT05);
+        result.addEvent(GameTest.SHOT06);
+        result.addEvent(GameTest.SHOT07);
+        result.addEvent(GameTest.SHOT08);
+        result.addEvent(GameTest.SHOT09);
+        result.addEvent(GameTest.SHOT10);
+        result.addEvent(GameTest.SHOT11);
+        result.addEvent(GameTest.SHOT12);
+        result.addEvent(GameTest.SHOT13);
+        return result;
     }
 
     @Test
     public void getActualShotCoordinatesTest() {
+        final Game game = GameTest.getPreparedGame();
         Assert.assertEquals(
-            GameTest.GAME.getActualShotCoordinates(Player.FIRST),
+            game.getActualShotCoordinates(Player.FIRST),
             Set.of(
                 GameTest.SHOT02.coordinate,
                 GameTest.SHOT04.coordinate,
@@ -104,7 +107,7 @@ public class GameTest {
             )
         );
         Assert.assertEquals(
-            GameTest.GAME.getActualShotCoordinates(Player.SECOND),
+            game.getActualShotCoordinates(Player.SECOND),
             Set.of(
                 GameTest.SHOT01.coordinate,
                 GameTest.SHOT03.coordinate,
@@ -119,7 +122,8 @@ public class GameTest {
 
     @Test
     public void getEventsByPlayerTest() {
-        final Set<Event> actual1 = GameTest.GAME.getEventsByPlayer(Player.FIRST).collect(Collectors.toSet());
+        final Game game = GameTest.getPreparedGame();
+        final Set<Event> actual1 = game.getEventsByPlayer(Player.FIRST).collect(Collectors.toSet());
         final Set<Event> expected1 =
             Set.of(
                 GameTest.PLACEMENT01,
@@ -134,7 +138,7 @@ public class GameTest {
                 GameTest.SHOT13
             );
         Assert.assertEquals(actual1, expected1);
-        final Set<Event> actual2 = GameTest.GAME.getEventsByPlayer(Player.SECOND).collect(Collectors.toSet());
+        final Set<Event> actual2 = game.getEventsByPlayer(Player.SECOND).collect(Collectors.toSet());
         final Set<Event> expected2 =
             Set.of(
                 GameTest.PLACEMENT02,
@@ -152,16 +156,17 @@ public class GameTest {
 
     @Test
     public void getShipCoordinatesTest() {
+        final Game game = GameTest.getPreparedGame();
         final Set<Coordinate> expected1 = new LinkedHashSet<Coordinate>();
         expected1.addAll(GameTest.PLACEMENT01.toCoordinates().toList());
         expected1.addAll(GameTest.PLACEMENT03.toCoordinates().toList());
         expected1.addAll(GameTest.PLACEMENT05.toCoordinates().toList());
-        Assert.assertEquals(GameTest.GAME.getShipCoordinates(Player.FIRST), expected1);
+        Assert.assertEquals(game.getShipCoordinates(Player.FIRST), expected1);
         final Set<Coordinate> expected2 = new LinkedHashSet<Coordinate>();
         expected2.addAll(GameTest.PLACEMENT02.toCoordinates().toList());
         expected2.addAll(GameTest.PLACEMENT04.toCoordinates().toList());
         expected2.addAll(GameTest.PLACEMENT06.toCoordinates().toList());
-        Assert.assertEquals(GameTest.GAME.getShipCoordinates(Player.SECOND), expected2);
+        Assert.assertEquals(game.getShipCoordinates(Player.SECOND), expected2);
     }
 
 }

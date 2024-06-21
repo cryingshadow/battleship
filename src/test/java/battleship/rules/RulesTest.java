@@ -2,6 +2,7 @@ package battleship.rules;
 
 import java.util.*;
 import java.util.Optional;
+import java.util.function.*;
 import java.util.stream.*;
 
 import org.testng.*;
@@ -54,7 +55,7 @@ public class RulesTest {
     }
 
     @DataProvider
-    public Object[][] betweenData() {
+    public Object[][] isBetweenData() {
         return new Object[][] {
             {0, 0, 1, true},
             {0, 1, 2, true},
@@ -71,8 +72,279 @@ public class RulesTest {
         };
     }
 
+    @Test(dataProvider="betweenData")
+    public void isBetweenTest(
+        final int lowerBoundInclusive,
+        final int number,
+        final int upperBoundExclusive,
+        final boolean expected
+    ) {
+        Assert.assertEquals(Rules.isBetween(lowerBoundInclusive, number, upperBoundExclusive), expected);
+    }
+
     @DataProvider
-    public Object[][] coordinateData() {
+    public Object[][] shipPlacementData() {
+        final Predicate<Game> isEmpty = new Predicate<Game>() {
+
+            @Override
+            public boolean test(final Game game) {
+                return game.getEvents().count() == 0;
+            }
+
+        };
+        return new Object[][] {
+            {
+                RulesTest.RULES_STUB,
+                new Game(),
+                ShipType.CARRIER,
+                Player.FIRST,
+                new ShipPlacement(ShipType.CARRIER, new Coordinate(0, 0), Direction.EAST, Player.FIRST),
+                true,
+                new Predicate<Game>() {
+
+                    @Override
+                    public boolean test(final Game game) {
+                        final Set<Coordinate> shipCoordinates = game.getShipCoordinates(Player.FIRST);
+                        return game.getEvents().count() == 1
+                            && shipCoordinates.size() == 5
+                            && shipCoordinates.containsAll(
+                                Set.of(
+                                    new Coordinate(0, 0),
+                                    new Coordinate(1, 0),
+                                    new Coordinate(2, 0),
+                                    new Coordinate(3, 0),
+                                    new Coordinate(4, 0)
+                                )
+                            );
+                    }
+
+                }
+            },
+            {
+                RulesTest.RULES_STUB,
+                new Game(),
+                ShipType.CARRIER,
+                Player.FIRST,
+                new ShipPlacement(ShipType.CARRIER, new Coordinate(0, 0), Direction.EAST, Player.SECOND),
+                false,
+                isEmpty
+            },
+            {
+                RulesTest.RULES_STUB,
+                new Game(),
+                ShipType.CARRIER,
+                Player.FIRST,
+                new ShipPlacement(ShipType.BATTLESHIP, new Coordinate(0, 0), Direction.EAST, Player.FIRST),
+                false,
+                isEmpty
+            },
+            {
+                RulesTest.RULES_STUB,
+                new Game(),
+                ShipType.CARRIER,
+                Player.FIRST,
+                new Shot(new Coordinate(0, 0), Player.FIRST),
+                false,
+                isEmpty
+            },
+            {
+                RulesTest.RULES_STUB,
+                GameTest.getPreparedGame(),
+                ShipType.CARRIER,
+                Player.FIRST,
+                new ShipPlacement(ShipType.CARRIER, new Coordinate(1, 9), Direction.NORTH, Player.FIRST),
+                true,
+                new Predicate<Game>() {
+
+                    @Override
+                    public boolean test(final Game game) {
+                        final Set<Coordinate> shipCoordinates = game.getShipCoordinates(Player.FIRST);
+                        return game.getEvents().count() == 20
+                            && shipCoordinates.size() == 11
+                            && shipCoordinates.containsAll(
+                                Set.of(
+                                    new Coordinate(1, 9),
+                                    new Coordinate(1, 8),
+                                    new Coordinate(1, 7),
+                                    new Coordinate(1, 6),
+                                    new Coordinate(1, 5),
+                                    new Coordinate(2, 3),
+                                    new Coordinate(3, 3),
+                                    new Coordinate(4, 3),
+                                    new Coordinate(8, 7),
+                                    new Coordinate(7, 7),
+                                    new Coordinate(8, 2)
+                                )
+                            );
+                    }
+
+                }
+            },
+            {
+                RulesTest.RULES_STUB,
+                GameTest.getPreparedGame(),
+                ShipType.CARRIER,
+                Player.FIRST,
+                new ShipPlacement(ShipType.CARRIER, new Coordinate(5, 2), Direction.EAST, Player.FIRST),
+                false,
+                new Predicate<Game>() {
+
+                    @Override
+                    public boolean test(final Game game) {
+                        final Set<Coordinate> shipCoordinates = game.getShipCoordinates(Player.FIRST);
+                        return game.getEvents().count() == 19
+                            && shipCoordinates.size() == 6
+                            && shipCoordinates.containsAll(
+                                Set.of(
+                                    new Coordinate(2, 3),
+                                    new Coordinate(3, 3),
+                                    new Coordinate(4, 3),
+                                    new Coordinate(8, 7),
+                                    new Coordinate(7, 7),
+                                    new Coordinate(8, 2)
+                                )
+                            );
+                    }
+
+                }
+            }
+        };
+    }
+
+    @Test(dataProvider="shipPlacementData")
+    public void shipPlacementTest(
+        final Rules rules,
+        final Game game,
+        final ShipType type,
+        final Player player,
+        final Event event,
+        final boolean expectedResult,
+        final Predicate<Game> expectedState
+    ) {
+        Assert.assertEquals(rules.shipPlacement(game, type, player, event), expectedResult);
+        Assert.assertTrue(expectedState.test(game));
+    }
+
+    @DataProvider
+    public Object[][] shotData() {
+        final Predicate<Game> isEmpty = new Predicate<Game>() {
+
+            @Override
+            public boolean test(final Game game) {
+                return game.getEvents().count() == 0;
+            }
+
+        };
+        return new Object[][] {
+            {
+                RulesTest.RULES_STUB,
+                new Game(),
+                Player.FIRST,
+                new Shot(new Coordinate(0, 0), Player.FIRST),
+                true,
+                new Predicate<Game>() {
+
+                    @Override
+                    public boolean test(final Game game) {
+                        final Set<Coordinate> shotCoordinates = game.getActualShotCoordinates(Player.SECOND);
+                        return game.getEvents().count() == 1
+                            && shotCoordinates.size() == 1
+                            && shotCoordinates.contains(new Coordinate(0, 0));
+                    }
+
+                }
+            },
+            {
+                RulesTest.RULES_STUB,
+                new Game(),
+                Player.FIRST,
+                new Shot(new Coordinate(0, 0), Player.SECOND),
+                false,
+                isEmpty
+            },
+            {
+                RulesTest.RULES_STUB,
+                new Game(),
+                Player.FIRST,
+                new Shot(new Coordinate(10, 10), Player.FIRST),
+                false,
+                isEmpty
+            },
+            {
+                RulesTest.RULES_STUB,
+                GameTest.getPreparedGame(),
+                Player.FIRST,
+                new Shot(new Coordinate(5, 2), Player.FIRST),
+                true,
+                new Predicate<Game>() {
+
+                    @Override
+                    public boolean test(final Game game) {
+                        final Set<Coordinate> shotCoordinates = game.getActualShotCoordinates(Player.SECOND);
+                        return game.getEvents().count() == 20
+                            && shotCoordinates.size() == 8
+                            && shotCoordinates.containsAll(
+                                Set.of(
+                                    new Coordinate(5, 5),
+                                    new Coordinate(0, 5),
+                                    new Coordinate(1, 5),
+                                    new Coordinate(4, 5),
+                                    new Coordinate(4, 6),
+                                    new Coordinate(4, 7),
+                                    new Coordinate(2, 7),
+                                    new Coordinate(5, 2)
+                                )
+                            );
+                    }
+
+                }
+            },
+            {
+                RulesTest.RULES_STUB,
+                GameTest.getPreparedGame(),
+                Player.FIRST,
+                new Shot(new Coordinate(5, 5), Player.FIRST),
+                true,
+                new Predicate<Game>() {
+
+                    @Override
+                    public boolean test(final Game game) {
+                        final Set<Coordinate> shotCoordinates = game.getActualShotCoordinates(Player.SECOND);
+                        return game.getEvents().count() == 20
+                            && shotCoordinates.size() == 7
+                            && shotCoordinates.containsAll(
+                                Set.of(
+                                    new Coordinate(5, 5),
+                                    new Coordinate(0, 5),
+                                    new Coordinate(1, 5),
+                                    new Coordinate(4, 5),
+                                    new Coordinate(4, 6),
+                                    new Coordinate(4, 7),
+                                    new Coordinate(2, 7)
+                                )
+                            );
+                    }
+
+                }
+            }
+        };
+    }
+
+    @Test(dataProvider="shotData")
+    public void shotTest(
+        final Rules rules,
+        final Game game,
+        final Player player,
+        final Event event,
+        final boolean expectedResult,
+        final Predicate<Game> expectedState
+    ) {
+        Assert.assertEquals(rules.shot(game, player, event), expectedResult);
+        Assert.assertTrue(expectedState.test(game));
+    }
+
+    @DataProvider
+    public Object[][] validCoordinateData() {
         return new Object[][] {
             {RulesTest.RULES_STUB, new Coordinate(0, 0), true},
             {RulesTest.RULES_STUB, new Coordinate(9, 9), true},
@@ -89,18 +361,13 @@ public class RulesTest {
         };
     }
 
-    @Test(dataProvider="betweenData")
-    public void isBetweenTest(
-        final int lowerBoundInclusive,
-        final int number,
-        final int upperBoundExclusive,
-        final boolean expected
-    ) {
-        Assert.assertEquals(Rules.isBetween(lowerBoundInclusive, number, upperBoundExclusive), expected);
+    @Test(dataProvider="coordinateData")
+    public void validCoordinateTest(final Rules rules, final Coordinate coordinate, final boolean expected) {
+        Assert.assertEquals(rules.validCoordinate(coordinate), expected);
     }
 
     @DataProvider
-    public Object[][] placementData() {
+    public Object[][] validShipPlacementData() {
         return new Object[][] {
             {
                 RulesTest.RULES_STUB,
@@ -226,16 +493,75 @@ public class RulesTest {
                 new ShipPlacement(ShipType.BATTLESHIP, new Coordinate(5, 5), Direction.WEST, Player.FIRST),
                 Set.of(new Coordinate(1, 5)),
                 true
+            },
+            {
+                RulesTest.RULES_STUB,
+                new ShipPlacement(ShipType.CANNON_BOAT, new Coordinate(5, 5), Direction.SOUTH, Player.FIRST),
+                Stream.of(
+                    new ShipPlacement(
+                        ShipType.CARRIER,
+                        new Coordinate(1, 1),
+                        Direction.SOUTH,
+                        Player.FIRST
+                    ).toCoordinates(),
+                    new ShipPlacement(
+                        ShipType.BATTLESHIP,
+                        new Coordinate(7, 8),
+                        Direction.WEST,
+                        Player.FIRST
+                    ).toCoordinates(),
+                    new ShipPlacement(
+                        ShipType.CRUISER,
+                        new Coordinate(3, 6),
+                        Direction.EAST,
+                        Player.FIRST
+                    ).toCoordinates(),
+                    new ShipPlacement(
+                        ShipType.DESTROYER,
+                        new Coordinate(9, 9),
+                        Direction.NORTH,
+                        Player.FIRST
+                    ).toCoordinates()
+                ).flatMap(Function.identity())
+                .collect(Collectors.toSet()),
+                true
+            },
+            {
+                RulesTest.RULES_STUB,
+                new ShipPlacement(ShipType.CANNON_BOAT, new Coordinate(5, 8), Direction.SOUTH, Player.FIRST),
+                Stream.of(
+                    new ShipPlacement(
+                        ShipType.CARRIER,
+                        new Coordinate(1, 1),
+                        Direction.SOUTH,
+                        Player.FIRST
+                    ).toCoordinates(),
+                    new ShipPlacement(
+                        ShipType.BATTLESHIP,
+                        new Coordinate(7, 8),
+                        Direction.WEST,
+                        Player.FIRST
+                    ).toCoordinates(),
+                    new ShipPlacement(
+                        ShipType.CRUISER,
+                        new Coordinate(3, 6),
+                        Direction.EAST,
+                        Player.FIRST
+                    ).toCoordinates(),
+                    new ShipPlacement(
+                        ShipType.DESTROYER,
+                        new Coordinate(9, 9),
+                        Direction.NORTH,
+                        Player.FIRST
+                    ).toCoordinates()
+                ).flatMap(Function.identity())
+                .collect(Collectors.toSet()),
+                false
             }
         };
     }
 
-    @Test(dataProvider="coordinateData")
-    public void validCoordinateTest(final Rules rules, final Coordinate coordinate, final boolean expected) {
-        Assert.assertEquals(rules.validCoordinate(coordinate), expected);
-    }
-
-    @Test(dataProvider="placementData")
+    @Test(dataProvider="validPlacementData")
     public void validShipPlacementTest(
         final Rules rules,
         final ShipPlacement placement,
