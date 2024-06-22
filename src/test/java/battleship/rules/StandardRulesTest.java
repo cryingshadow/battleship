@@ -110,9 +110,22 @@ public class StandardRulesTest {
         Assert.assertEquals(StandardRules.INSTANCE.getWinner(game), expected);
     }
 
-    @Test
-    public void placementConflictTest() {
-        //TODO
+    @DataProvider
+    public Object[][] placementConflictData() {
+        return new Object[][] {
+            {new Coordinate(0, 0), new Coordinate(9, 9), false},
+            {new Coordinate(0, 0), new Coordinate(0, 0), true},
+            {new Coordinate(0, 0), new Coordinate(1, 0), true},
+            {new Coordinate(0, 0), new Coordinate(1, 1), true},
+            {new Coordinate(0, 0), new Coordinate(2, 0), false},
+            {new Coordinate(5, 5), new Coordinate(4, 4), true},
+            {new Coordinate(6, 4), new Coordinate(4, 4), false}
+        };
+    }
+
+    @Test(dataProvider="placementConflictData")
+    public void placementConflictTest(final Coordinate first, final Coordinate second, final boolean expected) {
+        Assert.assertEquals(StandardRules.INSTANCE.placementConflict(first, second), expected);
     }
 
 }
