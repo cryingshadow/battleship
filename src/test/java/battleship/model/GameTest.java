@@ -68,7 +68,31 @@ public class GameTest {
         SHOT13 = new Shot(new Coordinate(2, 7), Player.FIRST);
     }
 
-    public static final Game getPreparedGame() {
+    /*
+     *     A B C D E F G H I J       A B C D E F G H I J
+     *    ---------------------     ---------------------
+     *  1 |X| | | | | | | | | |   1 | | | | | | | | | | |
+     *    ---------------------     ---------------------
+     *  2 | |X| | | | | | | | |   2 | | | | | | | | | | |
+     *    ---------------------     ---------------------
+     *  3 | | |X| | | | | |O| |   3 | | | | | | | | | | |
+     *    ---------------------     ---------------------
+     *  4 | | |O|*|O| | | | | |   4 | | | | | | | | | | |
+     *    ---------------------     ---------------------
+     *  5 | | | | |X| | | | | |   5 | | | | | | | | | | |
+     *    ---------------------     ---------------------
+     *  6 | | | | | |X| | | | |   6 |*|*| | |*|X| | | | |
+     *    ---------------------     ---------------------
+     *  7 | | | | | | | | | | |   7 | | | | |*| | | | | |
+     *    ---------------------     ---------------------
+     *  8 | | | | | | | |O|O| |   8 | | |*| |*| | | | | |
+     *    ---------------------     ---------------------
+     *  9 | | | | | | | | | | |   9 | | | | | | | | | | |
+     *    ---------------------     ---------------------
+     * 10 | | | | | | | | | | |  10 | | | | | | | | | | |
+     *    ---------------------     ---------------------
+     */
+    public static final Game getPreparedGame(final boolean withShots) {
         final Game result = new Game();
         result.addEvent(GameTest.PLACEMENT01);
         result.addEvent(GameTest.PLACEMENT02);
@@ -76,25 +100,27 @@ public class GameTest {
         result.addEvent(GameTest.PLACEMENT04);
         result.addEvent(GameTest.PLACEMENT05);
         result.addEvent(GameTest.PLACEMENT06);
-        result.addEvent(GameTest.SHOT01);
-        result.addEvent(GameTest.SHOT02);
-        result.addEvent(GameTest.SHOT03);
-        result.addEvent(GameTest.SHOT04);
-        result.addEvent(GameTest.SHOT05);
-        result.addEvent(GameTest.SHOT06);
-        result.addEvent(GameTest.SHOT07);
-        result.addEvent(GameTest.SHOT08);
-        result.addEvent(GameTest.SHOT09);
-        result.addEvent(GameTest.SHOT10);
-        result.addEvent(GameTest.SHOT11);
-        result.addEvent(GameTest.SHOT12);
-        result.addEvent(GameTest.SHOT13);
+        if (withShots) {
+            result.addEvent(GameTest.SHOT01);
+            result.addEvent(GameTest.SHOT02);
+            result.addEvent(GameTest.SHOT03);
+            result.addEvent(GameTest.SHOT04);
+            result.addEvent(GameTest.SHOT05);
+            result.addEvent(GameTest.SHOT06);
+            result.addEvent(GameTest.SHOT07);
+            result.addEvent(GameTest.SHOT08);
+            result.addEvent(GameTest.SHOT09);
+            result.addEvent(GameTest.SHOT10);
+            result.addEvent(GameTest.SHOT11);
+            result.addEvent(GameTest.SHOT12);
+            result.addEvent(GameTest.SHOT13);
+        }
         return result;
     }
 
     @Test
     public void getActualShotCoordinatesTest() {
-        final Game game = GameTest.getPreparedGame();
+        final Game game = GameTest.getPreparedGame(true);
         Assert.assertEquals(
             game.getActualShotCoordinates(Player.FIRST),
             Set.of(
@@ -122,7 +148,7 @@ public class GameTest {
 
     @Test
     public void getEventsByPlayerTest() {
-        final Game game = GameTest.getPreparedGame();
+        final Game game = GameTest.getPreparedGame(true);
         final Set<Event> actual1 = game.getEventsByPlayer(Player.FIRST).collect(Collectors.toSet());
         final Set<Event> expected1 =
             Set.of(
@@ -156,7 +182,7 @@ public class GameTest {
 
     @Test
     public void getShipCoordinatesTest() {
-        final Game game = GameTest.getPreparedGame();
+        final Game game = GameTest.getPreparedGame(true);
         final Set<Coordinate> expected1 = new LinkedHashSet<Coordinate>();
         expected1.addAll(GameTest.PLACEMENT01.toCoordinates().toList());
         expected1.addAll(GameTest.PLACEMENT03.toCoordinates().toList());

@@ -72,7 +72,7 @@ public class RulesTest {
         };
     }
 
-    @Test(dataProvider="betweenData")
+    @Test(dataProvider="isBetweenData")
     public void isBetweenTest(
         final int lowerBoundInclusive,
         final int number,
@@ -149,7 +149,7 @@ public class RulesTest {
             },
             {
                 RulesTest.RULES_STUB,
-                GameTest.getPreparedGame(),
+                GameTest.getPreparedGame(false),
                 ShipType.CARRIER,
                 Player.FIRST,
                 new ShipPlacement(ShipType.CARRIER, new Coordinate(1, 9), Direction.NORTH, Player.FIRST),
@@ -159,7 +159,7 @@ public class RulesTest {
                     @Override
                     public boolean test(final Game game) {
                         final Set<Coordinate> shipCoordinates = game.getShipCoordinates(Player.FIRST);
-                        return game.getEvents().count() == 20
+                        return game.getEvents().count() == 7
                             && shipCoordinates.size() == 11
                             && shipCoordinates.containsAll(
                                 Set.of(
@@ -182,7 +182,7 @@ public class RulesTest {
             },
             {
                 RulesTest.RULES_STUB,
-                GameTest.getPreparedGame(),
+                GameTest.getPreparedGame(false),
                 ShipType.CARRIER,
                 Player.FIRST,
                 new ShipPlacement(ShipType.CARRIER, new Coordinate(5, 2), Direction.EAST, Player.FIRST),
@@ -192,7 +192,7 @@ public class RulesTest {
                     @Override
                     public boolean test(final Game game) {
                         final Set<Coordinate> shipCoordinates = game.getShipCoordinates(Player.FIRST);
-                        return game.getEvents().count() == 19
+                        return game.getEvents().count() == 6
                             && shipCoordinates.size() == 6
                             && shipCoordinates.containsAll(
                                 Set.of(
@@ -272,7 +272,7 @@ public class RulesTest {
             },
             {
                 RulesTest.RULES_STUB,
-                GameTest.getPreparedGame(),
+                GameTest.getPreparedGame(true),
                 Player.FIRST,
                 new Shot(new Coordinate(5, 2), Player.FIRST),
                 true,
@@ -301,7 +301,7 @@ public class RulesTest {
             },
             {
                 RulesTest.RULES_STUB,
-                GameTest.getPreparedGame(),
+                GameTest.getPreparedGame(true),
                 Player.FIRST,
                 new Shot(new Coordinate(5, 5), Player.FIRST),
                 true,
@@ -361,7 +361,7 @@ public class RulesTest {
         };
     }
 
-    @Test(dataProvider="coordinateData")
+    @Test(dataProvider="validCoordinateData")
     public void validCoordinateTest(final Rules rules, final Coordinate coordinate, final boolean expected) {
         Assert.assertEquals(rules.validCoordinate(coordinate), expected);
     }
@@ -561,7 +561,7 @@ public class RulesTest {
         };
     }
 
-    @Test(dataProvider="validPlacementData")
+    @Test(dataProvider="validShipPlacementData")
     public void validShipPlacementTest(
         final Rules rules,
         final ShipPlacement placement,

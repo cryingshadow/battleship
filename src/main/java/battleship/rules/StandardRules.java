@@ -7,6 +7,8 @@ import battleship.model.*;
 
 public class StandardRules implements Rules {
 
+    public static final StandardRules INSTANCE = new StandardRules();
+
     private static boolean allHit(final Player player, final Game game) {
         final Set<Coordinate> ships = game.getShipCoordinates(player);
         ships.removeAll(game.getActualShotCoordinates(player));
@@ -33,6 +35,8 @@ public class StandardRules implements Rules {
         return result.build();
     }
 
+    private StandardRules() {}
+
     @Override
     public int getHorizontalLength() {
         return 10;
@@ -44,9 +48,10 @@ public class StandardRules implements Rules {
         final Coordinate shot,
         final Game game
     ) {
+        final Player hitPlayer = playerWhoShot.inverse();
         final Optional<Event> placementCandidate =
             game
-            .getEventsByPlayer(playerWhoShot.inverse())
+            .getEventsByPlayer(hitPlayer)
             .filter(event -> (event instanceof ShipPlacement))
             .filter(event -> ((ShipPlacement)event).toCoordinates().anyMatch(coordinate -> coordinate.equals(shot)))
             .findAny();
@@ -54,7 +59,7 @@ public class StandardRules implements Rules {
             return Collections.emptySet();
         }
         final ShipPlacement placement = (ShipPlacement)placementCandidate.get();
-        final Set<Coordinate> shots = game.getActualShotCoordinates(playerWhoShot);
+        final Set<Coordinate> shots = game.getActualShotCoordinates(hitPlayer);
         if (placement.toCoordinates().allMatch(coordinate -> shots.contains(coordinate))) {
             return placement
                 .toCoordinates()

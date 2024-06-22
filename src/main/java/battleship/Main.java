@@ -18,7 +18,7 @@ public class Main {
         final MainFrame frame = new MainFrame(grid1, grid2, status);
         final ErrorMessenger errorMessenger = new ErrorMessenger(frame);
         final RuleEngine engine =
-            new RuleEngine(new StandardRules(), new SimpleAI(), listener1, listener2, status, errorMessenger);
+            new RuleEngine(StandardRules.INSTANCE, new SimpleAI(), listener1, listener2, status, errorMessenger);
         grid1.setFields(engine.toFieldArray(Player.FIRST, true));
         grid2.setFields(engine.toFieldArray(Player.SECOND, false));
         grid1.addListener(new PlacementListener(engine, Player.FIRST));
