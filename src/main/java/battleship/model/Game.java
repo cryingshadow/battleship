@@ -34,7 +34,7 @@ public class Game {
         return this.events.stream()
             .filter(event -> event.isShipPlacementEvent(player))
             .flatMap(event -> ((ShipPlacement)event).toCoordinates())
-            .collect(Collectors.toSet());
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
 }

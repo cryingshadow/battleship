@@ -72,26 +72,25 @@ public class RuleEngine {
     }
 
     public boolean placement(final Coordinate coordinate, final Player player) {
-        if (
-            this.currentTurn.isEmpty()
-            || !player.equals(this.currentTurn.get().player())
-            || this.currentTurn.get().toPlace().isEmpty()
-        ) {
+        if (this.currentTurn.isEmpty()) {
             return false;
         }
         final Turn currentTurn = this.currentTurn.get();
+        if (!player.equals(currentTurn.action().player) || !(currentTurn.action() instanceof ShipPlacementAction)) {
+            return false;
+        }
+        final ShipPlacementAction action = (ShipPlacementAction)currentTurn.action();
         if (this.coordinates.isEmpty()) {
             this.coordinates.push(coordinate);
-            if (currentTurn.toPlace().get().length > 1) {
+            if (action.shipType.length > 1) {
                 return true;
             }
         }
         final Coordinate start = this.coordinates.pop();
-        final ShipType toPlace = currentTurn.toPlace().get();
-        final Optional<Direction> direction = ShipPlacement.toDirection(toPlace, start, coordinate);
+        final Optional<Direction> direction = ShipPlacement.toDirection(action.shipType, start, coordinate);
         if (direction.isPresent()) {
-            final ShipPlacement placement = new ShipPlacement(toPlace, start, direction.get(), player);
-            if (currentTurn.action().apply(placement)) {
+            final ShipPlacement placement = new ShipPlacement(action.shipType, start, direction.get(), player);
+            if (currentTurn.action().apply(new EventAndState(this.rules, this.game, placement))) {
                 placement.toCoordinates().forEach(c -> this.ownFieldListener.accept(c, Field.SHIP));
                 this.currentTurn = this.getNextTurn();
                 return true;
@@ -104,8 +103,8 @@ public class RuleEngine {
             this.errorMessenger.accept(
                 String.format(
                     "Ein %s hat eine Länge von %d und muss waagerecht oder senkrecht platziert werden!",
-                    toPlace.name,
-                    toPlace.length
+                    action.shipType.name,
+                    action.shipType.length
                 )
             );
         }
@@ -113,14 +112,15 @@ public class RuleEngine {
     }
 
     public boolean shot(final Coordinate coordinate, final Player player) {
-        if (
-            this.currentTurn.isEmpty()
-            || !player.equals(this.currentTurn.get().player())
-            || this.currentTurn.get().toPlace().isPresent()
-        ) {
+        if (this.currentTurn.isEmpty()) {
             return false;
         }
-        if (this.currentTurn.get().action().apply(new Shot(coordinate, player))) {
+        final Turn currentTurn = this.currentTurn.get();
+        if (!player.equals(currentTurn.action().player) || !(currentTurn.action() instanceof ShotAction)) {
+            return false;
+        }
+        final ShotAction action = (ShotAction)currentTurn.action();
+        if (action.apply(new EventAndState(this.rules, this.game, new Shot(coordinate, player)))) {
             final FieldListener listener = player == Player.FIRST ? this.opponentFieldListener : this.ownFieldListener;
             listener.accept(coordinate, this.getField(player.inverse(), coordinate));
             for (
@@ -194,11 +194,11 @@ public class RuleEngine {
 
     private Optional<Turn> getNextTurn() {
         Optional<Turn> result = this.rules.getNextTurn(this.game);
-        while (result.isPresent() && result.get().player() == Player.SECOND) {
-            final Turn turn = result.get();
-            if (turn.toPlace().isEmpty()) {
+        while (result.isPresent() && result.get().action().player == Player.SECOND) {
+            final TurnAction action = result.get().action();
+            if (action instanceof ShotAction) {
                 final Shot shot = this.opponent.getShot(this.rules, this.toFieldArray(Player.FIRST, false));
-                if (turn.action().apply(shot)) {
+                if (action.apply(new EventAndState(this.rules, this.game, shot))) {
                     this.ownFieldListener.accept(
                         shot.coordinate,
                         this.getField(Player.FIRST, shot.coordinate)
@@ -212,11 +212,15 @@ public class RuleEngine {
                     result = this.rules.getNextTurn(this.game);
                 }
             } else if (
-                turn.action().apply(
-                    this.opponent.getShipPlacement(
+                action.apply(
+                    new EventAndState(
                         this.rules,
-                        this.toFieldArray(Player.SECOND, true),
-                        turn.toPlace().get()
+                        this.game,
+                        this.opponent.getShipPlacement(
+                            this.rules,
+                            this.toFieldArray(Player.SECOND, true),
+                            ((ShipPlacementAction)action).shipType
+                        )
                     )
                 )
             ) {

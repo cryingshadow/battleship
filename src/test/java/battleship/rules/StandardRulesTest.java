@@ -10,6 +10,8 @@ import battleship.model.*;
 
 public class StandardRulesTest {
 
+    private static final String PROMPT_PATTERN = "Geben Sie die Koordinaten Ihres %s ein!";
+
     @Test
     public void dimensionTest() {
         Assert.assertEquals(StandardRules.INSTANCE.getHorizontalLength(), 10);
@@ -91,16 +93,162 @@ public class StandardRulesTest {
         );
     }
 
-    @Test
-    public void getNextTurnTest() {
-        //TODO
+    @DataProvider
+    public Object[][] getNextTurnData() {
+        final Game secondCruiser = new Game();
+        secondCruiser.addEvent(new ShipPlacement(ShipType.CARRIER, new Coordinate(0, 0), Direction.EAST, Player.FIRST));
+        secondCruiser.addEvent(
+            new ShipPlacement(ShipType.CARRIER, new Coordinate(0, 0), Direction.EAST, Player.SECOND)
+        );
+        secondCruiser.addEvent(
+            new ShipPlacement(ShipType.BATTLESHIP, new Coordinate(9, 9), Direction.WEST, Player.FIRST)
+        );
+        secondCruiser.addEvent(
+            new ShipPlacement(ShipType.BATTLESHIP, new Coordinate(9, 9), Direction.WEST, Player.SECOND)
+        );
+        secondCruiser.addEvent(
+            new ShipPlacement(ShipType.CRUISER, new Coordinate(0, 9), Direction.NORTH, Player.FIRST)
+        );
+        final Game firstShot = new Game();
+        firstShot.addEvent(new ShipPlacement(ShipType.CARRIER, new Coordinate(0, 0), Direction.EAST, Player.FIRST));
+        firstShot.addEvent(new ShipPlacement(ShipType.CARRIER, new Coordinate(0, 0), Direction.EAST, Player.SECOND));
+        firstShot.addEvent(new ShipPlacement(ShipType.BATTLESHIP, new Coordinate(9, 9), Direction.WEST, Player.FIRST));
+        firstShot.addEvent(new ShipPlacement(ShipType.BATTLESHIP, new Coordinate(9, 9), Direction.WEST, Player.SECOND));
+        firstShot.addEvent(new ShipPlacement(ShipType.CRUISER, new Coordinate(0, 9), Direction.NORTH, Player.FIRST));
+        firstShot.addEvent(new ShipPlacement(ShipType.CRUISER, new Coordinate(0, 9), Direction.NORTH, Player.SECOND));
+        firstShot.addEvent(new ShipPlacement(ShipType.DESTROYER, new Coordinate(9, 0), Direction.SOUTH, Player.FIRST));
+        firstShot.addEvent(new ShipPlacement(ShipType.DESTROYER, new Coordinate(9, 0), Direction.SOUTH, Player.SECOND));
+        firstShot.addEvent(
+            new ShipPlacement(ShipType.CANNON_BOAT, new Coordinate(5, 5), Direction.NORTH, Player.FIRST)
+        );
+        firstShot.addEvent(
+            new ShipPlacement(ShipType.CANNON_BOAT, new Coordinate(5, 5), Direction.NORTH, Player.SECOND)
+        );
+        final Game secondShot = new Game();
+        secondShot.addEvent(new ShipPlacement(ShipType.CARRIER, new Coordinate(0, 0), Direction.EAST, Player.FIRST));
+        secondShot.addEvent(new ShipPlacement(ShipType.CARRIER, new Coordinate(0, 0), Direction.EAST, Player.SECOND));
+        secondShot.addEvent(new ShipPlacement(ShipType.BATTLESHIP, new Coordinate(9, 9), Direction.WEST, Player.FIRST));
+        secondShot.addEvent(
+            new ShipPlacement(ShipType.BATTLESHIP, new Coordinate(9, 9), Direction.WEST, Player.SECOND)
+        );
+        secondShot.addEvent(new ShipPlacement(ShipType.CRUISER, new Coordinate(0, 9), Direction.NORTH, Player.FIRST));
+        secondShot.addEvent(new ShipPlacement(ShipType.CRUISER, new Coordinate(0, 9), Direction.NORTH, Player.SECOND));
+        secondShot.addEvent(new ShipPlacement(ShipType.DESTROYER, new Coordinate(9, 0), Direction.SOUTH, Player.FIRST));
+        secondShot.addEvent(
+            new ShipPlacement(ShipType.DESTROYER, new Coordinate(9, 0), Direction.SOUTH, Player.SECOND)
+        );
+        secondShot.addEvent(
+            new ShipPlacement(ShipType.CANNON_BOAT, new Coordinate(5, 5), Direction.NORTH, Player.FIRST)
+        );
+        secondShot.addEvent(
+            new ShipPlacement(ShipType.CANNON_BOAT, new Coordinate(5, 5), Direction.NORTH, Player.SECOND)
+        );
+        secondShot.addEvent(new Shot(new Coordinate(1, 1), Player.FIRST));
+        return new Object[][] {
+            {
+                new Game(),
+                Optional.of(
+                    new Turn(
+                        new ShipPlacementAction(Player.FIRST, ShipType.CARRIER),
+                        String.format(StandardRulesTest.PROMPT_PATTERN, "Flugzeugträgers")
+                    )
+                )
+            },
+            {
+                secondCruiser,
+                Optional.of(
+                    new Turn(
+                        new ShipPlacementAction(Player.SECOND, ShipType.CRUISER),
+                        String.format(StandardRulesTest.PROMPT_PATTERN, "Kreuzers")
+                    )
+                )
+            },
+            {
+                firstShot,
+                Optional.of(
+                    new Turn(
+                        new ShotAction(Player.FIRST),
+                        String.format(StandardRulesTest.PROMPT_PATTERN, "nächsten Schusses")
+                    )
+                )
+            },
+            {
+                secondShot,
+                Optional.of(
+                    new Turn(
+                        new ShotAction(Player.SECOND),
+                        String.format(StandardRulesTest.PROMPT_PATTERN, "nächsten Schusses")
+                    )
+                )
+            },
+            {GameTest.getPreparedGame(true), Optional.empty()}
+        };
+    }
+
+    @Test(dataProvider="getNextTurnData")
+    public void getNextTurnTest(final Game game, final Optional<Turn> expected) {
+        Assert.assertEquals(StandardRules.INSTANCE.getNextTurn(game), expected);
     }
 
     @DataProvider
-    public Object[][] getWinnerData() {
+    public Object[][] getWinnerData() throws InterruptedException {
+        final Game secondPlayerWins = GameTest.getPreparedGame(false);
+        Thread.sleep(1);
+        secondPlayerWins.addEvent(new Shot(new Coordinate(8, 2), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWins.addEvent(new Shot(new Coordinate(2, 3), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWins.addEvent(new Shot(new Coordinate(3, 3), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWins.addEvent(new Shot(new Coordinate(4, 3), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWins.addEvent(new Shot(new Coordinate(7, 7), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWins.addEvent(new Shot(new Coordinate(8, 7), Player.SECOND));
+        final Game secondPlayerWinsFirst = GameTest.getPreparedGame(false);
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(5, 5), Player.FIRST));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(8, 2), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(0, 5), Player.FIRST));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(2, 3), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(1, 5), Player.FIRST));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(3, 3), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(4, 5), Player.FIRST));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(4, 3), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(4, 6), Player.FIRST));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(7, 7), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(4, 7), Player.FIRST));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(8, 7), Player.SECOND));
+        Thread.sleep(1);
+        secondPlayerWinsFirst.addEvent(new Shot(new Coordinate(2, 7), Player.FIRST));
+        final Game firstPlayerWinsFirst = GameTest.getPreparedGame(true);
+        Thread.sleep(1);
+        firstPlayerWinsFirst.addEvent(new Shot(new Coordinate(8, 2), Player.SECOND));
+        Thread.sleep(1);
+        firstPlayerWinsFirst.addEvent(new Shot(new Coordinate(2, 3), Player.SECOND));
+        Thread.sleep(1);
+        firstPlayerWinsFirst.addEvent(new Shot(new Coordinate(4, 3), Player.SECOND));
+        Thread.sleep(1);
+        firstPlayerWinsFirst.addEvent(new Shot(new Coordinate(7, 7), Player.SECOND));
+        Thread.sleep(1);
+        firstPlayerWinsFirst.addEvent(new Shot(new Coordinate(8, 7), Player.SECOND));
         return new Object[][] {
             {GameTest.getPreparedGame(true), Optional.of(Player.FIRST)},
+            {secondPlayerWins, Optional.of(Player.SECOND)},
             {GameTest.getPreparedGame(false), Optional.empty()},
+            {secondPlayerWinsFirst, Optional.of(Player.SECOND)},
+            {firstPlayerWinsFirst, Optional.of(Player.FIRST)},
             {new Game(), Optional.empty()}
         };
     }

@@ -47,25 +47,48 @@ public class GameTest {
     private static final Shot SHOT13;
 
     static {
-        PLACEMENT01 = new ShipPlacement(ShipType.CRUISER, new Coordinate(2, 3), Direction.EAST, Player.FIRST);
-        PLACEMENT02 = new ShipPlacement(ShipType.CRUISER, new Coordinate(4, 5), Direction.SOUTH, Player.SECOND);
-        PLACEMENT03 = new ShipPlacement(ShipType.DESTROYER, new Coordinate(8, 7), Direction.WEST, Player.FIRST);
-        PLACEMENT04 = new ShipPlacement(ShipType.DESTROYER, new Coordinate(1, 5), Direction.WEST, Player.SECOND);
-        PLACEMENT05 = new ShipPlacement(ShipType.CANNON_BOAT, new Coordinate(8, 2), Direction.NORTH, Player.FIRST);
-        PLACEMENT06 = new ShipPlacement(ShipType.CANNON_BOAT, new Coordinate(2, 7), Direction.EAST, Player.SECOND);
-        SHOT01 = new Shot(new Coordinate(5, 5), Player.FIRST);
-        SHOT02 = new Shot(new Coordinate(0, 0), Player.SECOND);
-        SHOT03 = new Shot(new Coordinate(0, 5), Player.FIRST);
-        SHOT04 = new Shot(new Coordinate(1, 1), Player.SECOND);
-        SHOT05 = new Shot(new Coordinate(1, 5), Player.FIRST);
-        SHOT06 = new Shot(new Coordinate(2, 2), Player.SECOND);
-        SHOT07 = new Shot(new Coordinate(4, 5), Player.FIRST);
-        SHOT08 = new Shot(new Coordinate(3, 3), Player.SECOND);
-        SHOT09 = new Shot(new Coordinate(4, 6), Player.FIRST);
-        SHOT10 = new Shot(new Coordinate(4, 4), Player.SECOND);
-        SHOT11 = new Shot(new Coordinate(4, 7), Player.FIRST);
-        SHOT12 = new Shot(new Coordinate(5, 5), Player.SECOND);
-        SHOT13 = new Shot(new Coordinate(2, 7), Player.FIRST);
+        try {
+            Thread.sleep(1);
+            PLACEMENT01 = new ShipPlacement(ShipType.CRUISER, new Coordinate(2, 3), Direction.EAST, Player.FIRST);
+            Thread.sleep(1);
+            PLACEMENT02 = new ShipPlacement(ShipType.CRUISER, new Coordinate(4, 5), Direction.SOUTH, Player.SECOND);
+            Thread.sleep(1);
+            PLACEMENT03 = new ShipPlacement(ShipType.DESTROYER, new Coordinate(8, 7), Direction.WEST, Player.FIRST);
+            Thread.sleep(1);
+            PLACEMENT04 = new ShipPlacement(ShipType.DESTROYER, new Coordinate(1, 5), Direction.WEST, Player.SECOND);
+            Thread.sleep(1);
+            PLACEMENT05 = new ShipPlacement(ShipType.CANNON_BOAT, new Coordinate(8, 2), Direction.NORTH, Player.FIRST);
+            Thread.sleep(1);
+            PLACEMENT06 = new ShipPlacement(ShipType.CANNON_BOAT, new Coordinate(2, 7), Direction.EAST, Player.SECOND);
+            Thread.sleep(1);
+            SHOT01 = new Shot(new Coordinate(5, 5), Player.FIRST);
+            Thread.sleep(1);
+            SHOT02 = new Shot(new Coordinate(0, 0), Player.SECOND);
+            Thread.sleep(1);
+            SHOT03 = new Shot(new Coordinate(0, 5), Player.FIRST);
+            Thread.sleep(1);
+            SHOT04 = new Shot(new Coordinate(1, 1), Player.SECOND);
+            Thread.sleep(1);
+            SHOT05 = new Shot(new Coordinate(1, 5), Player.FIRST);
+            Thread.sleep(1);
+            SHOT06 = new Shot(new Coordinate(2, 2), Player.SECOND);
+            Thread.sleep(1);
+            SHOT07 = new Shot(new Coordinate(4, 5), Player.FIRST);
+            Thread.sleep(1);
+            SHOT08 = new Shot(new Coordinate(3, 3), Player.SECOND);
+            Thread.sleep(1);
+            SHOT09 = new Shot(new Coordinate(4, 6), Player.FIRST);
+            Thread.sleep(1);
+            SHOT10 = new Shot(new Coordinate(4, 4), Player.SECOND);
+            Thread.sleep(1);
+            SHOT11 = new Shot(new Coordinate(4, 7), Player.FIRST);
+            Thread.sleep(1);
+            SHOT12 = new Shot(new Coordinate(5, 5), Player.SECOND);
+            Thread.sleep(1);
+            SHOT13 = new Shot(new Coordinate(2, 7), Player.FIRST);
+        } catch (final InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /*

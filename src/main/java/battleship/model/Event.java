@@ -19,7 +19,11 @@ public abstract class Event implements Comparable<Event> {
 
     @Override
     public int compareTo(final Event other) {
-        return Long.compare(this.timestamp, other.timestamp);
+        final int result = Long.compare(this.timestamp, other.timestamp);
+        if (result == 0) {
+            return this.id.compareTo(other.id);
+        }
+        return result;
     }
 
     @Override

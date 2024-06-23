@@ -9,11 +9,7 @@ public class StandardRules implements Rules {
 
     public static final StandardRules INSTANCE = new StandardRules();
 
-    private static boolean allHit(final Player player, final Game game) {
-        final Set<Coordinate> ships = game.getShipCoordinates(player);
-        ships.removeAll(game.getActualShotCoordinates(player));
-        return ships.isEmpty();
-    }
+    private static final String PROMPT_PATTERN = "Geben Sie die Koordinaten Ihres %s ein!";
 
     private static Player determineCurrentPlayer(final Game game) {
         if (game.getEventsByPlayer(Player.FIRST).count() > game.getEventsByPlayer(Player.SECOND).count()) {
@@ -82,55 +78,43 @@ public class StandardRules implements Rules {
         case 0:
             return Optional.of(
                 new Turn(
-                    player,
-                    event -> this.shipPlacement(game, ShipType.CARRIER, player, event),
-                    Optional.of(ShipType.CARRIER),
-                    "Geben Sie die Koordinaten Ihres Flugzeugträgers ein!"
+                    new ShipPlacementAction(player, ShipType.CARRIER),
+                    String.format(StandardRules.PROMPT_PATTERN, "Flugzeugträgers")
                 )
             );
         case 1:
             return Optional.of(
                 new Turn(
-                    player,
-                    event -> this.shipPlacement(game, ShipType.BATTLESHIP, player, event),
-                    Optional.of(ShipType.BATTLESHIP),
-                    "Geben Sie die Koordinaten Ihres Schlachtschiffs ein!"
+                    new ShipPlacementAction(player, ShipType.BATTLESHIP),
+                    String.format(StandardRules.PROMPT_PATTERN, "Schlachtschiffs")
                 )
             );
         case 2:
             return Optional.of(
                 new Turn(
-                    player,
-                    event -> this.shipPlacement(game, ShipType.CRUISER, player, event),
-                    Optional.of(ShipType.CRUISER),
-                    "Geben Sie die Koordinaten Ihres Kreuzers ein!"
+                    new ShipPlacementAction(player, ShipType.CRUISER),
+                    String.format(StandardRules.PROMPT_PATTERN, "Kreuzers")
                 )
             );
         case 3:
             return Optional.of(
                 new Turn(
-                    player,
-                    event -> this.shipPlacement(game, ShipType.DESTROYER, player, event),
-                    Optional.of(ShipType.DESTROYER),
-                    "Geben Sie die Koordinaten Ihres Zerstörers ein!"
+                    new ShipPlacementAction(player, ShipType.DESTROYER),
+                    String.format(StandardRules.PROMPT_PATTERN, "Zerstörers")
                 )
             );
         case 4:
             return Optional.of(
                 new Turn(
-                    player,
-                    event -> this.shipPlacement(game, ShipType.CANNON_BOAT, player, event),
-                    Optional.of(ShipType.CANNON_BOAT),
-                    "Geben Sie die Koordinaten Ihres Kanonenboots ein!"
+                    new ShipPlacementAction(player, ShipType.CANNON_BOAT),
+                    String.format(StandardRules.PROMPT_PATTERN, "Kanonenboots")
                 )
             );
         default:
             return Optional.of(
                 new Turn(
-                    player,
-                    event -> this.shot(game, player, event),
-                    Optional.empty(),
-                    "Geben Sie die Koordinaten Ihres nächsten Schusses ein!"
+                    new ShotAction(player),
+                    String.format(StandardRules.PROMPT_PATTERN, "nächsten Schusses")
                 )
             );
         }
@@ -149,11 +133,32 @@ public class StandardRules implements Rules {
         ) {
             return Optional.empty();
         }
-        if (StandardRules.allHit(Player.FIRST, game)) {
-            return Optional.of(Player.SECOND);
-        }
-        if (StandardRules.allHit(Player.SECOND, game)) {
-            return Optional.of(Player.FIRST);
+        final Set<Coordinate> shipCoordinatesOfFirstPlayer = game.getShipCoordinates(Player.FIRST);
+        final Set<Coordinate> shipCoordinatesOfSecondPlayer = game.getShipCoordinates(Player.SECOND);
+        final List<Event> shots = game
+            .getEvents()
+            .filter(event -> (event instanceof Shot)).toList();
+        final Set<Event> events =
+            shots.stream()
+            .collect(Collectors.toCollection(TreeSet<Event>::new));
+        for (final Event event : events) {
+            final Shot shot = (Shot)event;
+            switch (shot.player) {
+            case FIRST:
+                shipCoordinatesOfSecondPlayer.remove(shot.coordinate);
+                if (shipCoordinatesOfSecondPlayer.isEmpty()) {
+                    return Optional.of(Player.FIRST);
+                }
+                break;
+            case SECOND:
+                shipCoordinatesOfFirstPlayer.remove(shot.coordinate);
+                if (shipCoordinatesOfFirstPlayer.isEmpty()) {
+                    return Optional.of(Player.SECOND);
+                }
+                break;
+            default:
+                throw new IllegalStateException("Found shot event without player!");
+            }
         }
         return Optional.empty();
     }
