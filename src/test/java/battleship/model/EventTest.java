@@ -15,10 +15,10 @@ public class EventTest {
         try {
             PLACEMENT =
                 new ShipPlacement(ShipType.BATTLESHIP, new Coordinate(0, 0), Direction.SOUTH, Player.FIRST);
-            TimeUnit.MILLISECONDS.sleep(2);
+            TimeUnit.MILLISECONDS.sleep(1);
             PLACEMENT2 =
                 new ShipPlacement(ShipType.BATTLESHIP, new Coordinate(0, 0), Direction.SOUTH, Player.FIRST);
-            TimeUnit.MILLISECONDS.sleep(2);
+            TimeUnit.MILLISECONDS.sleep(1);
             SHOT = new Shot(new Coordinate(0, 0), Player.SECOND);
         } catch (final InterruptedException e) {
             throw new IllegalStateException(e);

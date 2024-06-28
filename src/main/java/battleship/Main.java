@@ -27,7 +27,4 @@ public class Main {
         frame.setVisible(true);
     }
 
-    public boolean someLibraryMethod() {
-        return true;
-    }
 }
