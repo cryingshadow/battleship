@@ -48,8 +48,8 @@ public class FieldGrid extends JPanel {
         this.setField(coordinate.column(), coordinate.row(), field);
     }
 
-    public void setField(final int x, final int y, final Field field) {
-        this.fields[y][x].setField(field);
+    public void setField(final int column, final int row, final Field field) {
+        this.fields[row][column].setField(field);
         this.repaint();
     }
 
@@ -58,21 +58,21 @@ public class FieldGrid extends JPanel {
         this.fields = new FieldDisplay[fields.length][fields[0].length];
         this.setLayout(new GridLayout(fields.length + 1, fields[0].length + 1));
         this.add(new JLabel());
-        for (int x = 0; x < fields[0].length; x++) {
-            final JLabel label = new JLabel(String.valueOf((char)('A' + x)));
+        for (int column = 0; column < fields[0].length; column++) {
+            final JLabel label = new JLabel(String.valueOf((char)('A' + column)));
             Utility.center(label);
             this.add(label);
         }
-        for (int y = 0; y < fields.length; y++) {
-            final JLabel label = new JLabel(String.valueOf(y + 1));
+        for (int row = 0; row < fields.length; row++) {
+            final JLabel label = new JLabel(String.valueOf(row + 1));
             Utility.center(label);
             this.add(label);
-            for (int x = 0; x < fields[y].length; x++) {
-                final FieldDisplay display = new FieldDisplay(fields[y][x], new Coordinate(x, y));
+            for (int column = 0; column < fields[row].length; column++) {
+                final FieldDisplay display = new FieldDisplay(fields[row][column], new Coordinate(column, row));
                 for (final Consumer<Coordinate> listener : this.coordinateListeners) {
                     display.addListener(listener);
                 }
-                this.fields[y][x] = display;
+                this.fields[row][column] = display;
                 Utility.center(display);
                 this.add(display);
             }
