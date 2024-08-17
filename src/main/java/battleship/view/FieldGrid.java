@@ -12,6 +12,16 @@ public class FieldGrid extends JPanel {
 
     private static final long serialVersionUID = -2485007638406874995L;
 
+    private static void center(final AbstractButton button) {
+        button.setHorizontalAlignment(SwingConstants.CENTER);
+        button.setVerticalAlignment(SwingConstants.CENTER);
+    }
+
+    private static void center(final JLabel label) {
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setVerticalAlignment(SwingConstants.CENTER);
+    }
+
     private final java.util.List<Consumer<Coordinate>> coordinateListeners;
 
     private FieldDisplay[][] fields;
@@ -60,12 +70,12 @@ public class FieldGrid extends JPanel {
         this.add(new JLabel());
         for (int column = 0; column < fields[0].length; column++) {
             final JLabel label = new JLabel(String.valueOf((char)('A' + column)));
-            Utility.center(label);
+            FieldGrid.center(label);
             this.add(label);
         }
         for (int row = 0; row < fields.length; row++) {
             final JLabel label = new JLabel(String.valueOf(row + 1));
-            Utility.center(label);
+            FieldGrid.center(label);
             this.add(label);
             for (int column = 0; column < fields[row].length; column++) {
                 final FieldDisplay display = new FieldDisplay(fields[row][column], new Coordinate(column, row));
@@ -73,7 +83,7 @@ public class FieldGrid extends JPanel {
                     display.addListener(listener);
                 }
                 this.fields[row][column] = display;
-                Utility.center(display);
+                FieldGrid.center(display);
                 this.add(display);
             }
         }
