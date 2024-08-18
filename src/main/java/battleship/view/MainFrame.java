@@ -9,6 +9,7 @@ public class MainFrame extends JFrame {
     private static final long serialVersionUID = -7810253204514052620L;
 
     public MainFrame(final FieldGrid grid1, final FieldGrid grid2, final JLabel status) {
+        super("Schiffe versenken");
         final Container content = this.getContentPane();
         content.setLayout(new GridBagLayout());
         final GridBagConstraints constraints = new GridBagConstraints();
