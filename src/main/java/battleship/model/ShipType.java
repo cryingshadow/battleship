@@ -9,9 +9,9 @@ public enum ShipType {
     DESTROYER("Zerstörer", 2),
     SUBMARINE("U-Boot", 3);
 
-    public int length;
+    public final int length;
 
-    public String name;
+    public final String name;
 
     private ShipType(final String name, final int length) {
         this.name = name;
