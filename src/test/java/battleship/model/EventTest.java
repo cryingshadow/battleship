@@ -90,4 +90,27 @@ public class EventTest {
         Assert.assertEquals(event.isShotEvent(player), expected);
     }
 
+    @DataProvider
+    public Object[][] toDirectionData() {
+        return new Object[][] {
+            {ShipType.CARRIER, new Coordinate(0, 0), new Coordinate(0, 4), java.util.Optional.of(Direction.SOUTH)},
+            {ShipType.CARRIER, new Coordinate(0, 0), new Coordinate(0, 5), java.util.Optional.empty()},
+            {ShipType.CANNON_BOAT, new Coordinate(0, 0), new Coordinate(0, 0), java.util.Optional.of(Direction.NORTH)},
+            {ShipType.BATTLESHIP, new Coordinate(4, 5), new Coordinate(1, 5), java.util.Optional.of(Direction.WEST)},
+            {ShipType.CRUISER, new Coordinate(2, 3), new Coordinate(2, 1), java.util.Optional.of(Direction.NORTH)},
+            {ShipType.DESTROYER, new Coordinate(8, 7), new Coordinate(9, 7), java.util.Optional.of(Direction.EAST)},
+            {ShipType.SUBMARINE, new Coordinate(3, 7), new Coordinate(4, 5), java.util.Optional.empty()}
+        };
+    }
+
+    @Test(dataProvider="toDirectionData")
+    public void toDirectionTest(
+        final ShipType type,
+        final Coordinate start,
+        final Coordinate end,
+        final java.util.Optional<Direction> expected
+    ) {
+        Assert.assertEquals(ShipPlacement.toDirection(type, start, end), expected);
+    }
+
 }
