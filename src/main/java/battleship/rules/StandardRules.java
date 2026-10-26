@@ -60,8 +60,9 @@ public class StandardRules implements Rules {
             return placement
                 .toCoordinates()
                 .flatMap(coordinate -> StandardRules.toSurroundingCoordinates(coordinate))
-                .filter(coordinate -> !placement.toCoordinates().anyMatch(c -> c.equals(coordinate)))
-                .filter(coordinate -> this.validCoordinate(coordinate))
+                .filter(surroundingCoordinate ->
+                    !placement.toCoordinates().anyMatch(shipCoordinate -> shipCoordinate.equals(surroundingCoordinate))
+                ).filter(coordinate -> this.validCoordinate(coordinate))
                 .collect(Collectors.toSet());
         }
         return Collections.emptySet();
